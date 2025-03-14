@@ -21,7 +21,7 @@ class ClovekMajiciPohlavi(Clovek):
 
 def popis_cloveka(clovek:Clovek):
     print(clovek.jmeno,"je starý přesně", clovek.vek, "let")
-protocol.get_features
+    
 josef = ClovekMajiciPohlavi("Josef", 25)
 josef.ma_narozeniny()
 print(josef.pohlavi)
@@ -36,8 +36,3 @@ karel_clovek.ma_narozeniny()
 
 popis_cloveka(karel_clovek)
 popis_cloveka(josef)
-
-class HomoSapiens:
-    database_id = 1234
-
-HomoSapiens.database_id

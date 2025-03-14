@@ -1,1 +1,1 @@
-a_man = ["gay"]
+a_man = "gay"

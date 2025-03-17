@@ -1,28 +1,16 @@
-import random
 import tkinter as tk
 from tkinter import *
+import random
+
+win = tk.Tk()
+win.geometry("750x750")
+win.title("PythonGeeks") 
 
 hint = StringVar()
 score = IntVar()
 final_score= IntVar()
 guess= IntVar()
-
-win = tk.Tk()
-win.geometry("750x750")
-win.title("PythonGeeks")
-
-Entry(win, textvariable=guess, width=3,font=('Ubuntu', 50), relief=GROOVE).place(relx=0.5, rely=0.3, anchor=CENTER)
- 
-Entry(win, textvariable=hint, width=50,font=('Courier', 15), relief=GROOVE,bg='orange').place(relx=0.5, rely=0.7, anchor=CENTER)
- 
-Entry(win, text=final_score, width=2,font=('Ubuntu', 24), relief=GROOVE).place(relx=0.61, rely=0.85, anchor=CENTER)
- 
-Label(win, text='I challenge you to guess the number ',font=("Courier", 25)).place(relx=0.5, rely=0.09, anchor=CENTER)
- 
-Label(win, text='Score out of 5',font=("Courier", 25)).place(relx=0.3, rely=0.85, anchor=CENTER)
- 
-Button(win, width=8, text='CHECK', font=('Courier', 25), command=fun, relief=GROOVE,bg='light blue').place(relx=0.5, rely=0.5, anchor=CENTER)
-
+num=random.randint(1,50)
 hint.set("Guess a number between 1 to 50 ")
 score.set(5)
 final_score.set(score.get())
@@ -52,3 +40,17 @@ def fun():
             final_score.set(score.get())
     else:
          hint.set("Game Over You Lost")
+
+Entry(win, textvariable=guess, width=3,font=('Ubuntu', 50), relief=GROOVE).place(relx=0.5, rely=0.3, anchor=CENTER)
+ 
+Entry(win, textvariable=hint, width=50,font=('Courier', 15), relief=GROOVE,bg='orange').place(relx=0.5, rely=0.7, anchor=CENTER)
+ 
+Entry(win, text=final_score, width=2,font=('Ubuntu', 24), relief=GROOVE).place(relx=0.61, rely=0.85, anchor=CENTER)
+ 
+Label(win, text='I challenge you to guess the number ',font=("Courier", 25)).place(relx=0.5, rely=0.09, anchor=CENTER)
+ 
+Label(win, text='Score out of 5',font=("Courier", 25)).place(relx=0.3, rely=0.85, anchor=CENTER)
+ 
+Button(win, width=8, text='CHECK', font=('Courier', 25), command=fun, relief=GROOVE,bg='light blue').place(relx=0.5, rely=0.5, anchor=CENTER)
+
+win.mainloop()

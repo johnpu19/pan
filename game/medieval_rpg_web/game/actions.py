@@ -1,6 +1,7 @@
 from game.medieval_rpg_web.game.city import CITIES
 from game.enemies import generate_bandit, generate_mercenary, generate_rival_trader, generate_nomad_warrior, generate_assassin
 import random
+from game.cities import cities
 
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,

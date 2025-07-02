@@ -76,6 +76,16 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
     elif action == "Rest":
         player['health'] = 100  # or max health
         message = "You have rested and restored your health."
+    
+    elif action == "Train":
+         skill = item_name if item_name in ["strength", "intellect"] else "strength"
+         if skill == "strength":
+            player['strength'] += 1
+            message = "You feel stronger after training your strength!"
+         elif skill == "intellect":
+            player['intellect'] += 1
+            message = "You feel wiser after training your intellect!"
+        
 
     else:
         message = "Unknown action."

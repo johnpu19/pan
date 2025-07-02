@@ -95,11 +95,19 @@
     <div class="section">
         <h3>Other Actions</h3>
         <form method="post" action="/action">
-            <button type="submit" name="action" value="Train">Train</button>
             <button type="submit" name="action" value="Fight">Fight</button>
             <button type="submit" name="action" value="Rest">Rest</button>
         </form>
     </div>
+
+    <form method="post" action="/action">
+    <select name="item_name">
+        <option value="strength">Strength</option>
+        <option value="intellect">Intellect</option>
+    </select>
+    <button type="submit" name="action" value="Train">Train</button>
+</form>
+
 
     <h3>Fight an enemy</h3>
     <form method="POST" action="/action">

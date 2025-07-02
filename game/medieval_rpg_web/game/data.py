@@ -15,5 +15,11 @@ CITIES = {
         "Carpets": {"buy": 22, "sell": 16},
         "Incense": {"buy": 14, "sell": 10},
     },
-    # Add more cities later
+    "Fez": {
+        "Spices": {"buy": 12, "sell": 20},
+        "Silk": {"buy": 28, "sell": 24},
+        "Dates": {"buy": 4, "sell": 2},
+        "Carpets": {"buy": 22, "sell": 16},
+        "Incense": {"buy": 14, "sell": 10},
+    },
 }

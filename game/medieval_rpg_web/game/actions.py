@@ -10,8 +10,6 @@ ENEMY_GENERATORS = {
     "Assassin": generate_assassin,
 }
 
-def handle_action(action, player, item_name=None, quantity=1, destination=None):
-    message = ""
 
 def handle_action(action, player, item_name=None, quantity=1, destination=None):
     message = ""

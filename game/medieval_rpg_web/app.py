@@ -1,7 +1,8 @@
 from flask import Flask, render_template, request, session
 from game.player import Player
 from game.actions import handle_action
-from game.medieval_rpg_web.game.city import CITIES
+from game.cities import CITIES 
+
 
 app = Flask(__name__)
 app.secret_key = 'sultan-secret-key'

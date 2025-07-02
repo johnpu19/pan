@@ -1,7 +1,6 @@
-from game.medieval_rpg_web.game.city import CITIES
 from game.enemies import generate_bandit, generate_mercenary, generate_rival_trader, generate_nomad_warrior, generate_assassin
+from game.cities import CITIES
 import random
-from game.cities import cities
 
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
@@ -14,9 +13,13 @@ ENEMY_GENERATORS = {
 def handle_action(action, player, item_name=None, quantity=1, destination=None):
     message = ""
 
+def handle_action(action, player, item_name=None, quantity=1, destination=None):
+    message = ""
+    city_obj = CITIES[player['city']]
+
     if action == "Buy":
-        if item_name and item_name in CITIES[player['city']]:
-            price = CITIES[player['city']][item_name]['buy'] * quantity
+        if item_name and city_obj.has_item(item_name):
+            price = city_obj.get_buy_price(item_name) * quantity
             if player['gold'] >= price:
                 player['gold'] -= price
                 player['inventory'][item_name] = player['inventory'].get(item_name, 0) + quantity
@@ -28,7 +31,7 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
 
     elif action == "Sell":
         if item_name and player['inventory'].get(item_name, 0) >= quantity:
-            price = CITIES[player['city']][item_name]['sell'] * quantity
+            price = city_obj.get_sell_price(item_name) * quantity
             player['inventory'][item_name] -= quantity
             player['gold'] += price
             message = f"Sold {quantity} {item_name}(s) for {price} gold."

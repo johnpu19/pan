@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session
 from game.player import Player
-from game.actions import process_action
+from game.actions import handle_action
 from game.data import CITIES
 
 app = Flask(__name__)
@@ -17,6 +17,7 @@ def index():
     player = get_player()
     city = player['city']
     market = CITIES[city]
+    message = session.pop('message', None)  # Show message once then remove it
     return render_template("index.html", player=player, market=market, city=city, CITIES=CITIES)
 
 @app.route('/action', methods=['POST'])
@@ -33,7 +34,7 @@ def action():
     except (TypeError, ValueError):
         quantity = 1
 
-    result, updated_player = process_action(action, player, item_name=item_name, quantity=quantity)
+    result, updated_player =handle_action(action, player, item_name=item_name, quantity=quantity)
     session['player'] = updated_player
     city = updated_player['city']
     market = CITIES[city]

@@ -70,7 +70,7 @@
         </table>
 
         <form method="post" action="/action">
-            <select name="item">
+            <select name="item_name">
                 {% for item in market.keys() %}
                     <option value="{{ item }}">{{ item }}</option>
                 {% endfor %}
@@ -103,12 +103,25 @@
         </form>
     </div>
 
+    <h3>Fight an enemy</h3>
+    <form method="POST" action="/action">
+      <input type="hidden" name="action" value="Fight">
+      <select name="item_name">
+        <option value="">Random Enemy</option>
+        <option value="Desert Bandit">Desert Bandit</option>
+        <option value="Mercenary">Mercenary</option>
+        <option value="Rival Trader">Rival Trader</option>
+        <option value="Nomad Warrior">Nomad Warrior</option>
+        <option value="Assassin">Assassin</option>
+      </select>
+      <button type="submit">Fight!</button>
+    </form>
+
     {% if message %}
     <div class="section">
         <strong>{{ message }}</strong>
     </div>
     {% endif %}
+
 </body>
 </html>
-
-

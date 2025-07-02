@@ -11,22 +11,24 @@ def get_player():
         session['player'] = Player("Traveler").__dict__
     return session['player']
 
-
 @app.route('/')
 def index():
     player = get_player()
     city = player['city']
     market = CITIES[city]
     message = session.pop('message', None)  # Show message once then remove it
-    return render_template("index.html", player=player, market=market, city=city, CITIES=CITIES)
+    return render_template("index.html", player=player, market=market, city=city, CITIES=CITIES, message=message)
 
 @app.route('/action', methods=['POST'])
 def action():
     action = request.form['action']
-    player = session['player']
+    player_data = session['player']
 
-    item_name = request.form.get('item_name')
+    # Check for item_name or item because form uses both in different places
+    item_name = request.form.get('item') or request.form.get('item_name')
     quantity = request.form.get('quantity', 1)
+    destination = request.form.get('destination')
+
     try:
         quantity = int(quantity)
         if quantity < 1:
@@ -34,11 +36,13 @@ def action():
     except (TypeError, ValueError):
         quantity = 1
 
-    result, updated_player =handle_action(action, player, item_name=item_name, quantity=quantity)
+    message, updated_player = handle_action(action, player_data, item_name=item_name, quantity=quantity, destination=destination)
     session['player'] = updated_player
+
     city = updated_player['city']
     market = CITIES[city]
-    return render_template("index.html", player=updated_player, market=market, city=city, CITIES=CITIES, message=result)
+
+    return render_template("index.html", player=updated_player, city=city, market=market, CITIES=CITIES, message=message)
 
 @app.route('/reset')
 def reset():

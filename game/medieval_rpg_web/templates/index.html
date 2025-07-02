@@ -30,7 +30,7 @@
 </head>
 <body>
     <h1>Welcome, {{ player.name }}</h1>
-    <h2>Current City: {{ city }}</h2>
+    <h3>Current City: {{ city }}</h3>
 
     <div class="section">
         <h3>Stats</h3>
@@ -80,18 +80,16 @@
         </form>
     </div>
 
-    <div class="section">
-        <h3>Travel</h3>
-        <form method="post" action="/action">
-            <select name="destination">
-                {% for city_name in CITIES.keys() %}
-                    {% if city_name != city %}
-                    <option value="{{ city_name }}">{{ city_name }}</option>
-                    {% endif %}
-                {% endfor %}
-            </select>
-            <button type="submit" name="action" value="Travel">Travel</button>
-        </form>
+    <form method="post" action="/action">
+    <select name="destination">
+        {% for city_name in CITIES.keys() %}
+            {% if city_name != city %}
+            <option value="{{ city_name }}">{{ city_name }}</option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <button type="submit" name="action" value="Travel">Travel</button>
+</form>
     </div>
 
     <div class="section">

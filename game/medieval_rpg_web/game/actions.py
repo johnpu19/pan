@@ -2,6 +2,8 @@ from game.enemies import generate_bandit, generate_mercenary, generate_rival_tra
 from game.cities import CITIES
 import random
 
+from game.city import City
+
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
     "Mercenary": generate_mercenary,
@@ -17,9 +19,11 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
     message = ""
     city_obj = CITIES[player['city']]
 
+    city=City.from_dict(city_obj)
+
     if action == "Buy":
-        if item_name and city_obj.has_item(item_name):
-            price = city_obj.get_buy_price(item_name) * quantity
+        if item_name and city.has_item(item_name):
+            price = city.get_buy_price(item_name) * quantity
             if player['gold'] >= price:
                 player['gold'] -= price
                 player['inventory'][item_name] = player['inventory'].get(item_name, 0) + quantity
@@ -31,7 +35,7 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
 
     elif action == "Sell":
         if item_name and player['inventory'].get(item_name, 0) >= quantity:
-            price = city_obj.get_sell_price(item_name) * quantity
+            price = city.get_sell_price(item_name) * quantity
             player['inventory'][item_name] -= quantity
             player['gold'] += price
             message = f"Sold {quantity} {item_name}(s) for {price} gold."

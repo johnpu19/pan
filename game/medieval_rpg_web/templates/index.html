@@ -60,7 +60,7 @@
                 <th>Buy Price</th>
                 <th>Sell Price</th>
             </tr>
-            {% for item, prices in market.items() %}
+            {% for item, prices in market.market.items() %}
             <tr>
                 <td>{{ item }}</td>
                 <td>{{ prices.buy }}</td>
@@ -70,14 +70,14 @@
         </table>
 
         <form method="post" action="/action">
-            <select name="item_name">
-                {% for item in market.keys() %}
-                    <option value="{{ item }}">{{ item }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit" name="action" value="Buy">Buy</button>
-            <button type="submit" name="action" value="Sell">Sell</button>
-        </form>
+    <select name="item_name">
+        {% for item, prices in market.market.items() %}
+            <option value="{{ item }}">{{ item }}</option>
+        {% endfor %}
+    </select>
+    <button type="submit" name="action" value="Buy">Buy</button>
+    <button type="submit" name="action" value="Sell">Sell</button>
+</form>
     </div>
 
     <form method="post" action="/action">

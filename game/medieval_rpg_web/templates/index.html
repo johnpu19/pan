@@ -35,9 +35,13 @@
     <div class="section">
         <h3>Stats</h3>
         <ul>
-            <li>Health: {{ player.health }}</li>
+            <li>Health: {{ player.current_health }}/{{ player.max_health if player.max_health is defined else 'N/A' }}</li>
             <li>Strength: {{ player.strength }}</li>
             <li>Intellect: {{ player.intellect }}</li>
+            <li>Agility: {{ player.agility }}</li>
+            <li>Charisma: {{ player.charisma }}</li>
+            <li>Endurance: {{ player.endurance }}</li>
+            <li>Luck: {{ player.luck }}</li>
             <li>Gold: {{ player.gold }}</li>
             <li>Reputation: {{ player.reputation }}</li>
         </ul>
@@ -100,10 +104,14 @@
         </form>
     </div>
 
-    <form method="post" action="/action">
+ <form method="post" action="/action">
     <select name="item_name">
         <option value="strength">Strength</option>
         <option value="intellect">Intellect</option>
+        <option value="agility">Agility</option>
+        <option value="charisma">Charisma</option>
+        <option value="endurance">Endurance</option>
+        <option value="luck">Luck</option>
     </select>
     <button type="submit" name="action" value="Train">Train</button>
 </form>

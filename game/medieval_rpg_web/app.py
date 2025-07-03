@@ -23,7 +23,7 @@ def index():
 @app.route('/action', methods=['POST'])
 def action():
     action = request.form['action']
-    player_data = session['player']
+    player_data = get_player()
 
     # Check for item_name or item because form uses both in different places
     item_name = request.form.get('item') or request.form.get('item_name')

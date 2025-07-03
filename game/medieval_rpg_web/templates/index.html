@@ -32,6 +32,12 @@
     <h3>Welcome, {{ player.name }}</h3>
     <h3>Current City: {{ city }}</h3>
 
+        {% if message %}
+    <div class="section">
+        <strong style="white-space: pre-line;">{{ message }}</strong>
+    </div>
+    {% endif %}
+
     <div class="section">
         <h3>Stats</h3>
         <ul>
@@ -131,11 +137,7 @@
       <button type="submit">Fight!</button>
     </form>
 
-    {% if message %}
-    <div class="section">
-        <strong>{{ message }}</strong>
-    </div>
-    {% endif %}
+
 
 </body>
 </html>

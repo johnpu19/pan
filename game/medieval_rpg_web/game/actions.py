@@ -74,7 +74,7 @@ def handle_action(action, player_data, item_name=None, quantity=1, destination=N
                 fight_log.append("You were defeated! Rest to recover your health.")
                 break
 
-        message = "<br>".join(fight_log)
+        message = "\n".join(fight_log)
 
     elif action == "Rest":
         player.current_health = player.max_health

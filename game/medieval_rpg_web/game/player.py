@@ -26,7 +26,7 @@ class Player:
 
     @property
     def max_health(self):
-        return 50 + self.endurance * 2
+        return 50 + self.endurance * 1.2
 
     def train(self, skill):
         if skill == "strength":

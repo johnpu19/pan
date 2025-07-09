@@ -1,6 +1,7 @@
 from game.player import Player
 from game.cities import CITIES
 from game.enemies import generate_bandit, generate_mercenary, generate_rival_trader, generate_nomad_warrior, generate_assassin
+from game.enemies import Enemy
 import random
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
@@ -53,9 +54,14 @@ def handle_action(action, player_data, item_name=None, quantity=1, destination=N
         fight_log = []
 
         while player.current_health > 0 and enemy.health > 0:
-            player_damage = max(player.strength + random.randint(-2, 2), 0)
-            enemy.health -= player_damage
-            fight_log.append(f"You hit the {enemy.name} for {player_damage} damage! (Enemy HP: {max(enemy.health, 0)})")
+
+            if random.randint(0,6) + player.agility < random.randint(0,6) + enemy.agility:
+                fight_log.append(f"You missed the enemy")
+            
+            else:
+                player_damage = max(player.strength + random.randint(-2, 2), 0)
+                enemy.health -= player_damage
+                fight_log.append(f"You hit the {enemy.name} for {player_damage} damage! (Enemy HP: {max(enemy.health, 0)})")
 
             if enemy.health <= 0:
                 fight_log.append(f"You defeated the {enemy.name}!")

@@ -10,7 +10,7 @@ app.secret_key = 'sultan-secret-key'
 
 def get_player():
     if 'player' not in session or not isinstance(session['player'].get('inventory'), dict) or 'city' not in session['player']:
-        session['player'] = Player("Traveller").__dict__
+        session['player'] = Player("Traveler").__dict__
     return session['player']
 
 @app.route('/')

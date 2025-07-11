@@ -1,7 +1,8 @@
 import json
 import os
 
-PLAYER_FILE = 'player.json'
+PLAYER_FILE = "player.json"
+
 
 class Player:
     def __init__(self, name):
@@ -67,28 +68,28 @@ class Player:
 
     def to_dict(self):
         return {
-            'name': self.name,
-            'city': self.city,
-            'current_health': self.current_health,
-            'max_health': int(self.max_health),
-            'strength': self.strength,
-            'intellect': self.intellect,
-            'agility': self.agility,
-            'charisma': self.charisma,
-            'endurance': self.endurance,
-            'luck': self.luck,
-            'gold': self.gold,
-            'reputation': self.reputation,
-            'inventory': self.inventory,
+            "name": self.name,
+            "city": self.city,
+            "current_health": self.current_health,
+            "max_health": int(self.max_health),
+            "strength": self.strength,
+            "intellect": self.intellect,
+            "agility": self.agility,
+            "charisma": self.charisma,
+            "endurance": self.endurance,
+            "luck": self.luck,
+            "gold": self.gold,
+            "reputation": self.reputation,
+            "inventory": self.inventory,
         }
 
     def save(self):
-        with open(PLAYER_FILE, 'w') as f:
+        with open(PLAYER_FILE, "w") as f:
             json.dump(self.to_dict(), f, indent=4)
 
     @classmethod
     def load_from_dict(cls, data):
-        player = cls(data['name'])
+        player = cls(data["name"])
         # Use update but ensure current_health is set properly
         player.__dict__.update(data)
         # Just in case max_health changed due to endurance, clamp current_health:
@@ -98,13 +99,8 @@ class Player:
     @classmethod
     def load(cls):
         if os.path.exists(PLAYER_FILE):
-            with open(PLAYER_FILE, 'r') as f:
+            with open(PLAYER_FILE, "r") as f:
                 data = json.load(f)
             return cls.load_from_dict(data)
         else:
             return cls("Hero")
-
-        
-
-
-        

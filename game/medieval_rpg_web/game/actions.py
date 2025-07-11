@@ -1,8 +1,15 @@
 from game.player import Player
 from game.cities import CITIES
-from game.enemies import generate_bandit, generate_mercenary, generate_rival_trader, generate_nomad_warrior, generate_assassin
+from game.enemies import (
+    generate_bandit,
+    generate_mercenary,
+    generate_rival_trader,
+    generate_nomad_warrior,
+    generate_assassin,
+)
 from game.enemies import Enemy
 import random
+
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
     "Mercenary": generate_mercenary,
@@ -22,7 +29,9 @@ def handle_action(action, player_data, item_name=None, quantity=1, destination=N
             price = city_obj.get_buy_price(item_name) * quantity
             if player.gold >= price:
                 player.gold -= price
-                player.inventory[item_name] = player.inventory.get(item_name, 0) + quantity
+                player.inventory[item_name] = (
+                    player.inventory.get(item_name, 0) + quantity
+                )
                 message = f"Bought {quantity} {item_name}(s) for {price} gold."
             else:
                 message = "Not enough gold to buy."
@@ -55,13 +64,18 @@ def handle_action(action, player_data, item_name=None, quantity=1, destination=N
 
         while player.current_health > 0 and enemy.health > 0:
 
-            if random.randint(0,6) + player.agility < random.randint(0,6) + enemy.agility:
+            if (
+                random.randint(0, 6) + player.agility
+                < random.randint(0, 6) + enemy.agility
+            ):
                 fight_log.append(f"You missed the enemy")
-            
+
             else:
                 player_damage = max(player.strength + random.randint(-2, 2), 0)
                 enemy.health -= player_damage
-                fight_log.append(f"You hit the {enemy.name} for {player_damage} damage! (Enemy HP: {max(enemy.health, 0)})")
+                fight_log.append(
+                    f"You hit the {enemy.name} for {player_damage} damage! (Enemy HP: {max(enemy.health, 0)})"
+                )
 
             if enemy.health <= 0:
                 fight_log.append(f"You defeated the {enemy.name}!")
@@ -69,12 +83,16 @@ def handle_action(action, player_data, item_name=None, quantity=1, destination=N
                 rep_reward = random.randint(1, 5)
                 player.gold += gold_reward
                 player.reputation += rep_reward
-                fight_log.append(f"You earned {gold_reward} gold and {rep_reward} reputation.")
+                fight_log.append(
+                    f"You earned {gold_reward} gold and {rep_reward} reputation."
+                )
                 break
 
             enemy_damage = max(enemy.attack + random.randint(-2, 2), 0)
             player.current_health -= enemy_damage
-            fight_log.append(f"The {enemy.name} hits you for {enemy_damage} damage! (Your HP: {max(player.current_health, 0)})")
+            fight_log.append(
+                f"The {enemy.name} hits you for {enemy_damage} damage! (Your HP: {max(player.current_health, 0)})"
+            )
 
             if player.current_health <= 0:
                 fight_log.append("You were defeated! Rest to recover your health.")
@@ -87,7 +105,12 @@ def handle_action(action, player_data, item_name=None, quantity=1, destination=N
         message = "You have rested and restored your health."
 
     elif action == "Train":
-        skill = item_name if item_name in ["strength", "intellect", "agility", "charisma", "endurance", "luck"] else None
+        skill = (
+            item_name
+            if item_name
+            in ["strength", "intellect", "agility", "charisma", "endurance", "luck"]
+            else None
+        )
 
         if skill == "strength":
             player.strength += 1

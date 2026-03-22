@@ -1,6 +1,8 @@
 import json
 import os
-from items import get_template
+from .stats import DEFAULT_BASE_STATS
+from .items import get_template
+
 
 PLAYER_FILE = 'data/player.json'
 
@@ -10,15 +12,13 @@ class Player:
         self.name = name
         self.city = "Baghdad"
 
-        # base stats
-        self.health = 100
-        self.strength = 5
-        self.intellect = 5
-
         self.gold = 100
         self.reputation = 0
+        self.trade_xp = 0
 
-        # trade goods
+        self.base_stats = dict(DEFAULT_BASE_STATS)
+        self.current_health = 50 + self.base_stats["vitality"] * 10
+
         self.trade_inventory = {
             "Spices": 0,
             "Silk": 0,
@@ -27,9 +27,8 @@ class Player:
             "Incense": 0,
         }
 
-        # item system
-        self.owned_items = {}      # instance_id -> item dict
-        self.inventory_ids = []    # unequipped item ids
+        self.owned_items = {}
+        self.inventory_ids = []
         self.equipment = {
             "weapon": None,
             "head": None,
@@ -39,12 +38,9 @@ class Player:
         }
 
     def train(self, skill):
-        if skill == "strength":
-            self.strength += 1
-            print("You feel stronger!")
-        elif skill == "intellect":
-            self.intellect += 1
-            print("You feel wiser!")
+        if skill in self.base_stats:
+            self.base_stats[skill] += 1
+            print(f"You improved your {skill}!")
         else:
             print("Unknown skill.")
 
@@ -126,18 +122,19 @@ class Player:
 
     def to_dict(self):
         return {
-            'name': self.name,
-            'city': self.city,
-            'health': self.health,
-            'strength': self.strength,
-            'intellect': self.intellect,
-            'gold': self.gold,
-            'reputation': self.reputation,
-            'trade_inventory': self.trade_inventory,
-            'owned_items': self.owned_items,
-            'inventory_ids': self.inventory_ids,
-            'equipment': self.equipment,
+            "name": self.name,
+            "city": self.city,
+            "gold": self.gold,
+            "reputation": self.reputation,
+            "trade_xp": self.trade_xp,
+            "current_health": self.current_health,
+            "base_stats": self.base_stats,
+            "trade_inventory": self.trade_inventory,
+            "owned_items": self.owned_items,
+            "inventory_ids": self.inventory_ids,
+            "equipment": self.equipment,
         }
+        
 
     def save(self):
         os.makedirs("data", exist_ok=True)
@@ -152,11 +149,14 @@ class Player:
 
             player = cls(data['name'])
             player.city = data['city']
-            player.health = data['health']
-            player.strength = data['strength']
-            player.intellect = data['intellect']
-            player.gold = data['gold']
-            player.reputation = data['reputation']
+            player.gold = data.get("gold", 100)
+            player.reputation = data.get("reputation", 0)
+            player.trade_xp = data.get("trade_xp", 0)
+            player.base_stats = data.get("base_stats", dict(DEFAULT_BASE_STATS))
+            player.current_health = data.get(
+                "current_health",
+                50 + player.base_stats.get("vitality", 5) * 10
+            )
             player.trade_inventory = data.get('trade_inventory', {})
             player.owned_items = data.get('owned_items', {})
             player.inventory_ids = data.get('inventory_ids', [])
@@ -171,3 +171,4 @@ class Player:
             return player
         else:
             return cls("Hero")
+        

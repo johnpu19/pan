@@ -33,22 +33,67 @@
     <h3>Current City: {{ city }}</h3>
 
     <div class="section">
-        <h3>Stats</h3>
+    <h3>Stats</h3>
+    <ul>
+        <li>Health: {{ player.current_health }} / {{ total_stats.max_health }}</li>
+        <li>Strength: {{ total_stats.strength }} (base: {{ player.base_stats.strength }})</li>
+        <li>Agility: {{ total_stats.agility }} (base: {{ player.base_stats.agility }})</li>
+        <li>Vitality: {{ total_stats.vitality }} (base: {{ player.base_stats.vitality }})</li>
+        <li>Intellect: {{ total_stats.intellect }} (base: {{ player.base_stats.intellect }})</li>
+        <li>Luck: {{ total_stats.luck }} (base: {{ player.base_stats.luck }})</li>
+        <li>Damage: {{ total_stats.damage_min }} - {{ total_stats.damage_max }}</li>
+        <li>Armor: {{ total_stats.armor }}</li>
+        <li>Hit Chance: {{ total_stats.hit_chance }}%</li>
+        <li>Dodge Chance: {{ total_stats.dodge_chance }}%</li>
+        <li>Gold: {{ player.gold }}</li>
+        <li>Reputation: {{ player.reputation }}</li>
+        <li>Trade XP: {{ player.trade_xp }}</li>
+    </ul>
+</div>
+
+    <div class="section">
+        <h3>Trade Goods</h3>
         <ul>
-            <li>Health: {{ player.health }}</li>
-            <li>Strength: {{ player.strength }}</li>
-            <li>Intellect: {{ player.intellect }}</li>
-            <li>Gold: {{ player.gold }}</li>
-            <li>Reputation: {{ player.reputation }}</li>
+            {% for item, qty in player.trade_inventory.items() %}
+                <li>{{ item }}: {{ qty }}</li>
+            {% endfor %}
         </ul>
     </div>
 
     <div class="section">
-        <h3>Inventory</h3>
+        <h3>Equipment</h3>
         <ul>
-            {% for item, qty in player.inventory.items() %}
-                <li>{{ item }}: {{ qty }}</li>
-            {% endfor %}
+            {% if player.equipment %}
+                {% for slot, item_id in player.equipment.items() %}
+                    <li>
+                        {{ slot }}:
+                        {% if item_id and item_id in player.owned_items %}
+                            {{ ITEM_TEMPLATES[player.owned_items[item_id].template_id].name }}
+                        {% else %}
+                            None
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            {% else %}
+                <li>No equipment data yet.</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>Item Inventory</h3>
+        <ul>
+            {% if player.inventory_ids %}
+                {% for item_id in player.inventory_ids %}
+                    {% if item_id in player.owned_items %}
+                        <li>{{ ITEM_TEMPLATES[player.owned_items[item_id].template_id].name }}</li>
+                    {% else %}
+                        <li>Broken item reference: {{ item_id }}</li>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <li>Empty</li>
+            {% endif %}
         </ul>
     </div>
 
@@ -80,16 +125,18 @@
         </form>
     </div>
 
-    <form method="post" action="/action">
-    <select name="destination">
-        {% for city_name in CITIES.keys() %}
-            {% if city_name != city %}
-            <option value="{{ city_name }}">{{ city_name }}</option>
-            {% endif %}
-        {% endfor %}
-    </select>
-    <button type="submit" name="action" value="Travel">Travel</button>
-</form>
+    <div class="section">
+        <h3>Travel</h3>
+        <form method="post" action="/action">
+            <select name="destination">
+                {% for city_name in CITIES.keys() %}
+                    {% if city_name != city %}
+                    <option value="{{ city_name }}">{{ city_name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+            <button type="submit" name="action" value="Travel">Travel</button>
+        </form>
     </div>
 
     <div class="section">
@@ -100,28 +147,34 @@
         </form>
     </div>
 
+    <div class="section">
+    <h3>Training</h3>
     <form method="post" action="/action">
-    <select name="item_name">
-        <option value="strength">Strength</option>
-        <option value="intellect">Intellect</option>
-    </select>
-    <button type="submit" name="action" value="Train">Train</button>
-</form>
-
-
-    <h3>Fight an enemy</h3>
-    <form method="POST" action="/action">
-      <input type="hidden" name="action" value="Fight">
-      <select name="item_name">
-        <option value="">Random Enemy</option>
-        <option value="Desert Bandit">Desert Bandit</option>
-        <option value="Mercenary">Mercenary</option>
-        <option value="Rival Trader">Rival Trader</option>
-        <option value="Nomad Warrior">Nomad Warrior</option>
-        <option value="Assassin">Assassin</option>
-      </select>
-      <button type="submit">Fight!</button>
+        <select name="item_name">
+            <option value="strength">Strength</option>
+            <option value="agility">Agility</option>
+            <option value="vitality">Vitality</option>
+            <option value="intellect">Intellect</option>
+        </select>
+        <button type="submit" name="action" value="Train">Train</button>
     </form>
+</div>
+
+    <div class="section">
+        <h3>Fight an enemy</h3>
+        <form method="POST" action="/action">
+            <input type="hidden" name="action" value="Fight">
+            <select name="item_name">
+                <option value="">Random Enemy</option>
+                <option value="Desert Bandit">Desert Bandit</option>
+                <option value="Mercenary">Mercenary</option>
+                <option value="Rival Trader">Rival Trader</option>
+                <option value="Nomad Warrior">Nomad Warrior</option>
+                <option value="Assassin">Assassin</option>
+            </select>
+            <button type="submit">Fight!</button>
+        </form>
+    </div>
 
     {% if message %}
     <div class="section">

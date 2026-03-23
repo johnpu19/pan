@@ -1,5 +1,7 @@
 from .data import CITIES
 import random
+from .items import create_item_instance
+from .enemies import LOOT_TABLES
 from .enemies import (
     generate_bandit,
     generate_mercenary,
@@ -8,7 +10,7 @@ from .enemies import (
     generate_assassin,
 )
 from .utils import compute_total_stats
-from .inventory_service import equip_item, unequip_item
+from .inventory_service import equip_item, unequip_item, sell_item, drop_item
 
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
@@ -83,33 +85,104 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
         else:
             enemy = random.choice(list(ENEMY_GENERATORS.values()))()
 
-        # transitional combat: use total stats, but keep system simple
         stats = compute_total_stats(player)
         fight_log = []
 
+        player_hit_chance = stats.get("hit_chance", 75)
+        player_dodge_chance = stats.get("dodge_chance", 0)
+        player_damage_min = stats.get("damage_min", 1)
+        player_damage_max = stats.get("damage_max", 2)
+        player_strength = stats.get("strength", 5)
+        player_armor = stats.get("armor", 0)
+
+        # simple enemy defaults for now
+       
+        enemy_hit_chance = enemy.hit_chance
+        enemy_dodge_chance = enemy.dodge_chance
+        enemy_damage_min = enemy.damage_min
+        enemy_damage_max = enemy.damage_max
+        enemy_armor = enemy.armor
+
         while player["current_health"] > 0 and enemy.health > 0:
-            player_damage = max(stats.get("strength", 5) + random.randint(-2, 2), 0)
-            enemy.health -= player_damage
-            fight_log.append(
-                f"You hit the {enemy.name} for {player_damage} damage! "
-                f"(Enemy HP: {max(enemy.health, 0)})"
-            )
+            # ----------------------------
+            # PLAYER ATTACK
+            # ----------------------------
+            hit_roll = random.randint(1, 100)
+            if hit_roll > player_hit_chance:
+                fight_log.append(f"You miss the {enemy.name}!")
+            else:
+                dodge_roll = random.randint(1, 100)
+                if dodge_roll <= enemy_dodge_chance:
+                    fight_log.append(f"The {enemy.name} dodges your attack!")
+                else:
+                    raw_damage = random.randint(player_damage_min, player_damage_max) + player_strength
+                    final_damage = max(raw_damage - enemy_armor, 0)
+
+                    enemy.health -= final_damage
+                    fight_log.append(
+                        f"You hit the {enemy.name} for {final_damage} damage! "
+                        f"(Enemy HP: {max(enemy.health, 0)})"
+                    )
 
             if enemy.health <= 0:
                 fight_log.append(f"You defeated the {enemy.name}!")
-                gold_reward = random.randint(15, 40)
-                rep_reward = random.randint(1, 5)
+
+                gold_reward = random.randint(enemy.gold_min, enemy.gold_max)
+                rep_reward = random.randint(enemy.rep_min, enemy.rep_max)
+
                 player["gold"] += gold_reward
                 player["reputation"] += rep_reward
-                fight_log.append(f"You earned {gold_reward} gold and {rep_reward} reputation.")
-                break
 
-            enemy_damage = max(enemy.attack + random.randint(-2, 2), 0)
-            player["current_health"] -= enemy_damage
-            fight_log.append(
-                f"The {enemy.name} hits you for {enemy_damage} damage! "
-                f"(Your HP: {max(player['current_health'], 0)})"
-            )
+                fight_log.append(f"You earned {gold_reward} gold and {rep_reward} reputation.")
+
+                # ----------------------------
+                # ITEM DROP
+                # ----------------------------
+                luck = stats.get("luck", 0)
+                drop_chance = 25 + luck * 2  # % chance
+
+                roll = random.randint(1, 100)
+
+                if roll <= drop_chance:
+                    loot_list = LOOT_TABLES.get(enemy.name, [])
+
+                    if loot_list:
+                        template_id = random.choice(loot_list)
+                        item = create_item_instance(template_id)
+
+                        player["owned_items"][item["instance_id"]] = item
+                        player["inventory_ids"].append(item["instance_id"])
+
+                        from .items import get_template
+                        template = get_template(template_id)
+
+                        item_name = template["name"] if template else template_id
+
+                        fight_log.append(f"You found: {item_name}!")
+                        break
+                else:
+                    fight_log.append("No item dropped.")
+                    break
+
+            # ----------------------------
+            # ENEMY ATTACK
+            # ----------------------------
+            enemy_hit_roll = random.randint(1, 100)
+            if enemy_hit_roll > enemy_hit_chance:
+                fight_log.append(f"The {enemy.name} misses you!")
+            else:
+                player_dodge_roll = random.randint(1, 100)
+                if player_dodge_roll <= player_dodge_chance:
+                    fight_log.append(f"You dodge the {enemy.name}'s attack!")
+                else:
+                    enemy_raw_damage = random.randint(enemy_damage_min, enemy_damage_max)
+                    enemy_final_damage = max(enemy_raw_damage - player_armor, 0)
+
+                    player["current_health"] -= enemy_final_damage
+                    fight_log.append(
+                        f"The {enemy.name} hits you for {enemy_final_damage} damage! "
+                        f"(Your HP: {max(player['current_health'], 0)})"
+                    )
 
             if player["current_health"] <= 0:
                 fight_log.append("You were defeated! Rest to recover your health.")
@@ -141,6 +214,20 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
             message = result_message
         else:
             message = "No slot selected to unequip."
+
+    elif action == "SellItem":
+        if item_name:
+            success, result_message = sell_item(player, item_name)
+            message = result_message
+        else:
+            message = "No item selected to sell."
+
+    elif action == "DropItem":
+        if item_name:
+            success, result_message = drop_item(player, item_name)
+            message = result_message
+        else:
+            message = "No item selected to drop."
 
     else:
         message = "Unknown action."

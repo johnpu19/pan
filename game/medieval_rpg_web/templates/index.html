@@ -60,7 +60,7 @@
         </ul>
     </div>
 
-    <div class="section">
+   <div class="section">
     <h3>Equipment</h3>
     <ul>
         {% if player.equipment %}
@@ -75,6 +75,18 @@
                             <input type="hidden" name="item_name" value="{{ slot }}">
                             <button type="submit">Unequip</button>
                         </form>
+
+                        <form method="post" action="/action" style="display:inline;">
+                            <input type="hidden" name="action" value="SellItem">
+                            <input type="hidden" name="item_name" value="{{ item_id }}">
+                            <button type="submit">Sell</button>
+                        </form>
+
+                        <form method="post" action="/action" style="display:inline;">
+                            <input type="hidden" name="action" value="DropItem">
+                            <input type="hidden" name="item_name" value="{{ item_id }}">
+                            <button type="submit">Drop</button>
+                        </form>
                     {% else %}
                         None
                     {% endif %}
@@ -86,7 +98,7 @@
     </ul>
 </div>
 
-    <div class="section">
+   <div class="section">
     <h3>Item Inventory</h3>
     <ul>
         {% if player.inventory_ids %}
@@ -105,6 +117,18 @@
                                 <button type="submit">Equip</button>
                             </form>
                         {% endif %}
+
+                        <form method="post" action="/action" style="display:inline;">
+                            <input type="hidden" name="action" value="SellItem">
+                            <input type="hidden" name="item_name" value="{{ item_id }}">
+                            <button type="submit">Sell</button>
+                        </form>
+
+                        <form method="post" action="/action" style="display:inline;">
+                            <input type="hidden" name="action" value="DropItem">
+                            <input type="hidden" name="item_name" value="{{ item_id }}">
+                            <button type="submit">Drop</button>
+                        </form>
                     </li>
                 {% else %}
                     <li>Broken item reference: {{ item_id }}</li>

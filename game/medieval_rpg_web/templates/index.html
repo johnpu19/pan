@@ -61,41 +61,60 @@
     </div>
 
     <div class="section">
-        <h3>Equipment</h3>
-        <ul>
-            {% if player.equipment %}
-                {% for slot, item_id in player.equipment.items() %}
-                    <li>
-                        {{ slot }}:
-                        {% if item_id and item_id in player.owned_items %}
-                            {{ ITEM_TEMPLATES[player.owned_items[item_id].template_id].name }}
-                        {% else %}
-                            None
-                        {% endif %}
-                    </li>
-                {% endfor %}
-            {% else %}
-                <li>No equipment data yet.</li>
-            {% endif %}
-        </ul>
-    </div>
+    <h3>Equipment</h3>
+    <ul>
+        {% if player.equipment %}
+            {% for slot, item_id in player.equipment.items() %}
+                <li>
+                    <strong>{{ slot }}</strong>:
+                    {% if item_id and item_id in player.owned_items %}
+                        {{ ITEM_TEMPLATES[player.owned_items[item_id].template_id].name }}
+
+                        <form method="post" action="/action" style="display:inline;">
+                            <input type="hidden" name="action" value="Unequip">
+                            <input type="hidden" name="item_name" value="{{ slot }}">
+                            <button type="submit">Unequip</button>
+                        </form>
+                    {% else %}
+                        None
+                    {% endif %}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>No equipment data yet.</li>
+        {% endif %}
+    </ul>
+</div>
 
     <div class="section">
-        <h3>Item Inventory</h3>
-        <ul>
-            {% if player.inventory_ids %}
-                {% for item_id in player.inventory_ids %}
-                    {% if item_id in player.owned_items %}
-                        <li>{{ ITEM_TEMPLATES[player.owned_items[item_id].template_id].name }}</li>
-                    {% else %}
-                        <li>Broken item reference: {{ item_id }}</li>
-                    {% endif %}
-                {% endfor %}
-            {% else %}
-                <li>Empty</li>
-            {% endif %}
-        </ul>
-    </div>
+    <h3>Item Inventory</h3>
+    <ul>
+        {% if player.inventory_ids %}
+            {% for item_id in player.inventory_ids %}
+                {% if item_id in player.owned_items %}
+                    {% set item = player.owned_items[item_id] %}
+                    {% set template = ITEM_TEMPLATES[item.template_id] %}
+
+                    <li>
+                        {{ template.name }}
+
+                        {% if template.equip_slot %}
+                            <form method="post" action="/action" style="display:inline;">
+                                <input type="hidden" name="action" value="Equip">
+                                <input type="hidden" name="item_name" value="{{ item_id }}">
+                                <button type="submit">Equip</button>
+                            </form>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li>Broken item reference: {{ item_id }}</li>
+                {% endif %}
+            {% endfor %}
+        {% else %}
+            <li>Empty</li>
+        {% endif %}
+    </ul>
+</div>
 
     <div class="section">
         <h3>Market in {{ city }}</h3>

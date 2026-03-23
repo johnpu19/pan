@@ -1,13 +1,14 @@
-from game.data import CITIES
-from game.enemies import (
+from .data import CITIES
+import random
+from .enemies import (
     generate_bandit,
     generate_mercenary,
     generate_rival_trader,
     generate_nomad_warrior,
     generate_assassin,
 )
-from game.utils import compute_total_stats
-import random
+from .utils import compute_total_stats
+from .inventory_service import equip_item, unequip_item
 
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
@@ -126,6 +127,20 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
         skill = item_name if item_name in valid_skills else "strength"
         player["base_stats"][skill] += 1
         message = f"You improved your {skill} through training!"
+    
+    elif action == "Equip":
+        if item_name:
+            success, result_message = equip_item(player, item_name)
+            message = result_message
+        else:
+            message = "No item selected to equip."
+
+    elif action == "Unequip":
+        if item_name:
+            success, result_message = unequip_item(player, item_name)
+            message = result_message
+        else:
+            message = "No slot selected to unequip."
 
     else:
         message = "Unknown action."

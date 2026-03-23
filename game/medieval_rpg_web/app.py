@@ -4,6 +4,7 @@ from game.items import ITEM_TEMPLATES
 from game.actions import handle_action
 from game.data import CITIES
 from game.utils import compute_total_stats
+from game.items import create_item_instance
 
 app = Flask(__name__)
 app.secret_key = 'sultan-secret-key'
@@ -128,6 +129,19 @@ def action():
 def reset():
     session.clear()
     return "Session cleared. Go back to <a href='/'>home</a>."
+
+@app.route('/give_item')
+def give_item():
+    player = get_player()
+
+    item = create_item_instance("iron_scimitar")
+
+    player["owned_items"][item["instance_id"]] = item
+    player["inventory_ids"].append(item["instance_id"])
+
+    session["player"] = player
+
+    return "Gave Iron Scimitar. Go back to <a href='/'>home</a>."
 
 
 if __name__ == "__main__":

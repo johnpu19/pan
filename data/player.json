@@ -1,0 +1,35 @@
+{
+    "name": "Hero",
+    "city": "Baghdad",
+    "health": 100,
+    "strength": 5,
+    "intellect": 5,
+    "gold": 170,
+    "reputation": 0,
+    "trade_inventory": {
+        "Spices": 14,
+        "Silk": 0,
+        "Dates": 0,
+        "Carpets": 0,
+        "Incense": 0
+    },
+    "owned_items": {
+        "8752d0bc-e54e-44f8-8d82-1a4602f84e3c": {
+            "instance_id": "8752d0bc-e54e-44f8-8d82-1a4602f84e3c",
+            "template_id": "iron_scimitar",
+            "quantity": 1,
+            "bonus_stats": {},
+            "durability": null
+        }
+    },
+    "inventory_ids": [
+        "8752d0bc-e54e-44f8-8d82-1a4602f84e3c"
+    ],
+    "equipment": {
+        "weapon": null,
+        "head": null,
+        "chest": null,
+        "ring_1": null,
+        "ring_2": null
+    }
+}

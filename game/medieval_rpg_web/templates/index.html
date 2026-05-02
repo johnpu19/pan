@@ -68,7 +68,22 @@
                 <li>
                     <strong>{{ slot }}</strong>:
                     {% if item_id and item_id in player.owned_items %}
-                        {{ ITEM_TEMPLATES[player.owned_items[item_id].template_id].name }}
+                        {% set template = ITEM_TEMPLATES[player.owned_items[item_id].template_id] %}
+
+                            {{ template.name }}
+                            {% if template.base_stats %}
+                                (
+                                {% for stat, value in template.base_stats.items() %}
+                                    {% if stat == "damage_min" %}
+                                        {{ value }}-
+                                    {% elif stat == "damage_max" %}
+                                        {{ value }} DMG
+                                    {% else %}
+                                        {{ stat|capitalize }} +{{ value }}
+                                    {% endif %}
+                                {% endfor %}
+                                )
+                            {% endif %}
 
                         <form method="post" action="/action" style="display:inline;">
                             <input type="hidden" name="action" value="Unequip">
@@ -76,17 +91,6 @@
                             <button type="submit">Unequip</button>
                         </form>
 
-                        <form method="post" action="/action" style="display:inline;">
-                            <input type="hidden" name="action" value="SellItem">
-                            <input type="hidden" name="item_name" value="{{ item_id }}">
-                            <button type="submit">Sell</button>
-                        </form>
-
-                        <form method="post" action="/action" style="display:inline;">
-                            <input type="hidden" name="action" value="DropItem">
-                            <input type="hidden" name="item_name" value="{{ item_id }}">
-                            <button type="submit">Drop</button>
-                        </form>
                     {% else %}
                         None
                     {% endif %}
@@ -109,6 +113,20 @@
 
                     <li>
                         {{ template.name }}
+                         Value: {{ template.value }} (Sell: {{ template.value // 2 }})
+                            {% if template.base_stats %}
+                                (
+                                {% for stat, value in template.base_stats.items() %}
+                                    {% if stat == "damage_min" %}
+                                        {{ value }}-
+                                    {% elif stat == "damage_max" %}
+                                        {{ value }} DMG
+                                    {% else %}
+                                        {{ stat|capitalize }} +{{ value }}
+                                    {% endif %}
+                                {% endfor %}
+                                )
+                            {% endif %}
 
                         {% if template.equip_slot %}
                             <form method="post" action="/action" style="display:inline;">

@@ -113,3 +113,23 @@ LOOT_TABLES = {
     "Nomad Warrior": ["nomad_spear", "leather_vest", "nomad_wrap"],
     "Assassin": ["rusty_dagger", "leather_hood", "golden_ring", "nomad_wrap"],
 }
+
+
+
+# class EnemyType(IntEnum):
+#     BANIT=0
+#     MERCENARY=1
+#     TRADER=2
+
+
+
+# enemy_dict:dict = {
+#     EnemyType.BANIT: generate_bandit,
+#     EnemyType.MERCENARY: generate_mercenary,
+# }
+# def get_enemy(enemy_type:EnemyType)->Enemy:
+#     return enemy_dict[enemy_type]()
+
+# funkce = enemy_dict[EnemyType.BANIT]
+
+# funkce()

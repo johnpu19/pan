@@ -19,9 +19,24 @@ ENEMY_GENERATORS = {
     "Nomad Warrior": generate_nomad_warrior,
     "Assassin": generate_assassin,
 }
+from  .actions.sell import handler_sell
+
+class Action:
+    id:str
+
+"sell":handler_sell
+handlers["sell"]
+
+class Travel(Action):
+    destination:str
+def handle_travel(travel_action:Action):
+    if not isinstance(travel_action, Travel):
+        raise Exception
+    ...
+    travel_action.destination
 
 
-def handle_action(action, player, item_name=None, quantity=1, destination=None):
+def handle_action(action:Action, player, item_name=None, quantity=1, destination=None):
     message = ""
 
     # safety migration for older session data
@@ -49,7 +64,9 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
     if "trade_xp" not in player:
         player["trade_xp"] = 0
 
-    if action == "Buy":
+    handlers[action.id](player, action)
+                        
+    if actioa == "Buy":
         if item_name and item_name in CITIES[player["city"]]:
             base_price = CITIES[player["city"]][item_name]["buy"]
             trade_bonus = get_trade_bonus(player)

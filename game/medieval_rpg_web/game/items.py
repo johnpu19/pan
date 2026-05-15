@@ -118,7 +118,7 @@ ITEM_TEMPLATES = {
     },
     "icon": "icons/silver_ring.png",
     "rarity": "common",
-    "stackable": True,
+    "stackable": False,
 },
 
 "golden_ring": {
@@ -132,7 +132,7 @@ ITEM_TEMPLATES = {
     },
     "icon": "icons/golden_ring.png",
     "rarity": "uncommon",
-    "stackable": True,
+    "stackable": False,
 },
 
 "leather_hood": {
@@ -160,6 +160,96 @@ ITEM_TEMPLATES = {
     },
     "icon": "icons/scholar_turban.png",
     "rarity": "uncommon",
+    "stackable": False,
+},
+
+"nomad_spear": {
+    "template_id": "nomad_spear",
+    "name": "Nomad Spear",
+    "category": "weapon",
+    "equip_slot": "weapon",
+    "value": 70,
+    "base_stats": {
+        "damage_min": 4,
+        "damage_max": 6,
+        "agility": 1,
+        "strength": 1
+    },
+    "icon": "icons/nomad_spear.png",
+    "rarity": "common",
+    "stackable": False,
+},
+
+"merchants_coat": {
+    "template_id": "merchants_coat",
+    "name": "Merchant's Coat",
+    "category": "armor",
+    "equip_slot": "chest",
+    "value": 65,
+    "base_stats": {
+        "intellect": 1,
+        "luck": 1
+    },
+    "icon": "icons/merchants_coat.png",
+    "rarity": "common",
+    "stackable": False,
+},
+
+"iron_helm": {
+    "template_id": "iron_helm",
+    "name": "Iron Helm",
+    "category": "armor",
+    "equip_slot": "head",
+    "value": 55,
+    "base_stats": {
+        "armor": 2,
+        "vitality": 1
+    },
+    "icon": "icons/iron_helm.png",
+    "rarity": "common",
+    "stackable": False,
+},
+
+"nomad_wrap": {
+    "template_id": "nomad_wrap",
+    "name": "Nomad Wrap",
+    "category": "armor",
+    "equip_slot": "head",
+    "value": 45,
+    "base_stats": {
+        "agility": 1,
+        "luck": 1
+    },
+    "icon": "icons/nomad_wrap.png",
+    "rarity": "common",
+    "stackable": False,
+},
+
+"warriors_ring": {
+    "template_id": "warriors_ring",
+    "name": "Warrior's Ring",
+    "category": "accessory",
+    "equip_slot": "ring",
+    "value": 60,
+    "base_stats": {
+        "strength": 1
+    },
+    "icon": "icons/warriors_ring.png",
+    "rarity": "common",
+    "stackable": False,
+},
+
+"guards_ring": {
+    "template_id": "guards_ring",
+    "name": "Guard's Ring",
+    "category": "accessory",
+    "equip_slot": "ring",
+    "value": 60,
+    "base_stats": {
+        "vitality": 1
+    },
+    "icon": "icons/guards_ring.png",
+    "rarity": "common",
     "stackable": False,
 },
 

@@ -9,7 +9,7 @@ from .enemies import (
     generate_nomad_warrior,
     generate_assassin,
 )
-from .utils import compute_total_stats
+from .utils import compute_total_stats, get_trade_bonus
 from .inventory_service import equip_item, unequip_item, sell_item, drop_item
 
 ENEMY_GENERATORS = {
@@ -51,24 +51,44 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
 
     if action == "Buy":
         if item_name and item_name in CITIES[player["city"]]:
-            price = CITIES[player["city"]][item_name]["buy"] * quantity
-            if player["gold"] >= price:
-                player["gold"] -= price
+            base_price = CITIES[player["city"]][item_name]["buy"]
+            trade_bonus = get_trade_bonus(player)
+
+            final_unit_price = max(1, round(base_price * (1 - trade_bonus)))
+            total_price = final_unit_price * quantity
+
+            if player["gold"] >= total_price:
+                player["gold"] -= total_price
                 player["trade_inventory"][item_name] = player["trade_inventory"].get(item_name, 0) + quantity
-                player["trade_xp"] += max(1, price // 10)
-                message = f"Bought {quantity} {item_name}(s) for {price} gold."
+                player["trade_xp"] += max(1, quantity)
+
+                discount_percent = round(trade_bonus * 100, 1)
+                message = (
+                    f"Bought {quantity} {item_name}(s) for {total_price} gold "
+                    f"({final_unit_price} each, {discount_percent}% trade bonus)."
+                )
             else:
-                message = "Not enough gold to buy."
+                message = f"Not enough gold to buy. You need {total_price} gold."
         else:
             message = "Invalid item to buy."
 
     elif action == "Sell":
         if item_name and player["trade_inventory"].get(item_name, 0) >= quantity:
-            price = CITIES[player["city"]][item_name]["sell"] * quantity
+            base_price = CITIES[player["city"]][item_name]["sell"]
+            trade_bonus = get_trade_bonus(player)
+
+            final_unit_price = max(1, round(base_price * (1 + trade_bonus)))
+            total_price = final_unit_price * quantity
+
             player["trade_inventory"][item_name] -= quantity
-            player["gold"] += price
-            player["trade_xp"] += max(1, price // 10)
-            message = f"Sold {quantity} {item_name}(s) for {price} gold."
+            player["gold"] += total_price
+            player["trade_xp"] += max(1, quantity * 2)
+
+            bonus_percent = round(trade_bonus * 100, 1)
+            message = (
+                f"Sold {quantity} {item_name}(s) for {total_price} gold "
+                f"({final_unit_price} each, +{bonus_percent}% trade bonus)."
+            )
         else:
             message = "You don't have enough items to sell."
 

@@ -5,6 +5,7 @@ from game.actions import handle_action
 from game.data import CITIES
 from game.utils import compute_total_stats
 from game.items import create_item_instance
+from game.utils import get_trade_bonus
 
 app = Flask(__name__)
 app.secret_key = 'sultan-secret-key'
@@ -71,6 +72,7 @@ def index():
     market = CITIES[city]
     message = session.pop('message', None)
     total_stats = compute_total_stats(player)
+    trade_bonus = get_trade_bonus(player)
 
     return render_template(
         "index.html",
@@ -80,7 +82,8 @@ def index():
         CITIES=CITIES,
         message=message,
         ITEM_TEMPLATES=ITEM_TEMPLATES,
-        total_stats=total_stats
+        total_stats=total_stats,
+        trade_bonus=trade_bonus
     )
 
 
@@ -112,6 +115,7 @@ def action():
     city = updated_player['city']
     market = CITIES[city]
     total_stats = compute_total_stats(updated_player)
+    trade_bonus = get_trade_bonus(updated_player)
 
     return render_template(
         "index.html",
@@ -121,7 +125,8 @@ def action():
         CITIES=CITIES,
         message=message,
         ITEM_TEMPLATES=ITEM_TEMPLATES,
-        total_stats=total_stats
+        total_stats=total_stats,
+        trade_bonus=trade_bonus
     )
 
 

@@ -34,3 +34,17 @@ def compute_total_stats(player):
     total = merge_stats(starting_total, equipment_bonus)
 
     return total
+
+def get_trade_bonus(player):
+    base_stats = player.get("base_stats", {})
+    intellect = base_stats.get("intellect", 0)
+    reputation = player.get("reputation", 0)
+    trade_xp = player.get("trade_xp", 0)
+
+    intellect_bonus = intellect * 0.005          # 0.5% per point
+    reputation_bonus = reputation * 0.003        # 0.3% per point
+    trade_xp_bonus = (trade_xp // 10) * 0.002    # 0.2% per 10 XP
+
+    total_bonus = intellect_bonus + reputation_bonus + trade_xp_bonus
+
+    return min(total_bonus, 0.30)  # cap at 30%

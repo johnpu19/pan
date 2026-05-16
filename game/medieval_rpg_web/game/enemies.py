@@ -107,9 +107,9 @@ def generate_assassin():
     )
 
 LOOT_TABLES = {
-    "Desert Bandit": ["rusty_dagger", "iron_scimitar", "copper_ring"],
-    "Mercenary": ["leather_vest", "chain_shirt", "steel_saber"],
-    "Rival Trader": ["silver_ring", "golden_ring"],
-    "Nomad Warrior": ["iron_scimitar", "leather_vest", "chain_shirt"],
-    "Assassin": ["rusty_dagger", "leather_hood", "golden_ring"],
+    "Desert Bandit": ["rusty_dagger", "copper_ring", "leather_hood"],
+    "Mercenary": ["iron_scimitar", "chain_shirt", "warriors_ring", "iron_helm"],
+    "Rival Trader": ["silver_ring", "golden_ring", "merchants_coat"],
+    "Nomad Warrior": ["nomad_spear", "leather_vest", "nomad_wrap"],
+    "Assassin": ["rusty_dagger", "leather_hood", "golden_ring", "nomad_wrap"],
 }

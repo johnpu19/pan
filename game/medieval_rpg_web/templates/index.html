@@ -48,6 +48,7 @@
         <li>Gold: {{ player.gold }}</li>
         <li>Reputation: {{ player.reputation }}</li>
         <li>Trade XP: {{ player.trade_xp }}</li>
+        <li>Trade Bonus: {{ (trade_bonus * 100) | round(1) }}% (max: 30%)</li>
     </ul>
 </div>
 
@@ -169,8 +170,14 @@
             {% for item, prices in market.items() %}
             <tr>
                 <td>{{ item }}</td>
-                <td>{{ prices.buy }}</td>
-                <td>{{ prices.sell }}</td>
+                <td>
+    {{ (prices.buy * (1 - trade_bonus)) | round(0) | int }}
+    ({{ prices.buy }})
+</td>
+<td>
+    {{ (prices.sell * (1 + trade_bonus)) | round(0) | int }}
+    ({{ prices.sell }})
+</td>
             </tr>
             {% endfor %}
         </table>

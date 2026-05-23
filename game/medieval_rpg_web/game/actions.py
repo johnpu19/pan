@@ -1,8 +1,7 @@
 from game.medieval_rpg_web.game import player
-
-from .data import CITIES
-from game.medieval_rpg_web.game.travel import start_travel, continue_travel
 import random
+from .data import CITIES
+from .travel import start_travel, continue_travel
 from .items import create_item_instance
 from .enemies import LOOT_TABLES
 from .enemies import (

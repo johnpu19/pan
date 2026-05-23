@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, session
+from game.medieval_rpg_web.game import player
 from game.player import Player
 from game.items import ITEM_TEMPLATES
 from game.actions import handle_action
@@ -6,6 +7,8 @@ from game.data import CITIES
 from game.utils import compute_total_stats
 from game.items import create_item_instance
 from game.utils import get_trade_bonus
+from game.map import MAP
+from game.travel import get_available_destinations
 
 app = Flask(__name__)
 app.secret_key = 'sultan-secret-key'
@@ -117,6 +120,11 @@ def action():
     total_stats = compute_total_stats(updated_player)
     trade_bonus = get_trade_bonus(updated_player)
 
+    available_destinations = {}
+
+    if not player["travel"]["active"]:
+        available_destinations = get_available_destinations(player)
+
     return render_template(
         "index.html",
         player=updated_player,
@@ -126,7 +134,8 @@ def action():
         message=message,
         ITEM_TEMPLATES=ITEM_TEMPLATES,
         total_stats=total_stats,
-        trade_bonus=trade_bonus
+        trade_bonus=trade_bonus,
+        available_destinations=available_destinations,
     )
 
 

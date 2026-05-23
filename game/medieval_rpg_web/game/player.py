@@ -12,6 +12,17 @@ class Player:
         self.name = name
         self.city = "Baghdad"
 
+
+        self.travel = {
+            "active": False,
+            "from": None,
+            "to": None,
+            "progress": 0,
+            "distance": 0,
+            "danger": 0,
+            "route_name": None,
+    }
+
         self.gold = 100
         self.reputation = 0
         self.trade_xp = 0
@@ -133,6 +144,8 @@ class Player:
             "owned_items": self.owned_items,
             "inventory_ids": self.inventory_ids,
             "equipment": self.equipment,
+            "city": self.city,
+            "travel": self.travel,
         }
         
 
@@ -166,6 +179,15 @@ class Player:
                 "chest": None,
                 "ring_1": None,
                 "ring_2": None,
+            })
+            player.travel = data.get('travel', {
+                "active": False,
+                "from": None,
+                "to": None,
+                "progress": 0,
+                "distance": 0,
+                "danger": 0,
+                "route_name": None,
             })
 
             return player

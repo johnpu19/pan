@@ -1,4 +1,7 @@
+from game.medieval_rpg_web.game import player
+
 from .data import CITIES
+from game.medieval_rpg_web.game.travel import start_travel, continue_travel
 import random
 from .items import create_item_instance
 from .enemies import LOOT_TABLES
@@ -248,6 +251,13 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
             message = result_message
         else:
             message = "No item selected to drop."
+        
+    elif action == "Travel":
+        destination = form.get("destination")
+        message = start_travel(player, destination)
+
+    elif action == "Continue Travel":
+        message = continue_travel(player)
 
     else:
         message = "Unknown action."

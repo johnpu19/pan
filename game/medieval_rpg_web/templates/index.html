@@ -52,6 +52,49 @@
     </ul>
 </div>
 
+<div class="panel">
+    <h2>Map & Travel</h2>
+
+    {% if player.travel.active %}
+        <p>
+            Traveling from
+            <strong>{{ MAP[player.travel.from].name }}</strong>
+            to
+            <strong>{{ MAP[player.travel.to].name }}</strong>
+        </p>
+
+        <p>Route: {{ player.travel.route_name }}</p>
+        <p>Progress: {{ player.travel.progress }} / {{ player.travel.distance }}</p>
+        <p>Danger: {{ player.travel.danger }}</p>
+
+        <form method="post">
+            <button name="action" value="Continue Travel">Continue Travel</button>
+        </form>
+
+    {% else %}
+        <p>
+            Current city:
+            <strong>{{ MAP[player.city].name }}</strong>
+        </p>
+
+        <p>{{ MAP[player.city].description }}</p>
+
+        <h3>Available routes</h3>
+
+        {% for dest_id, route in available_destinations.items() %}
+            <form method="post">
+                <input type="hidden" name="destination" value="{{ dest_id }}">
+                <button name="action" value="Travel">
+                    Travel to {{ MAP[dest_id].name }}
+                    — {{ route.route_name }}
+                    — Distance {{ route.distance }}
+                    — Danger {{ route.danger }}
+                </button>
+            </form>
+        {% endfor %}
+    {% endif %}
+</div>
+
     <div class="section">
         <h3>Trade Goods</h3>
         <ul>

@@ -2,12 +2,21 @@ from game.map import MAP
 
 
 def get_available_destinations(player):
-    city_id = player["city"]
+    city_id = player.get("city", "baghdad").lower()
+
+    if city_id not in MAP:
+        city_id = "baghdad"
+        player["city"] = city_id
+
     return MAP[city_id]["connections"]
 
 
 def start_travel(player, destination_id):
-    current_city = player["city"]
+    current_city = player.get("city", "baghdad").lower()
+
+    if current_city not in MAP:
+        current_city = "baghdad"
+        player["city"] = current_city
 
     if player["travel"]["active"]:
         return "You are already traveling."

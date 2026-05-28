@@ -9,91 +9,136 @@
             background-color: #f9f5e3;
             padding: 20px;
         }
+
         h1, h2, h3 {
             color: #3e2f1c;
         }
-        .section {
+
+        .section,
+        .panel {
             margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #c9b88c;
+            background-color: #fff8dc;
         }
+
         table {
             border-collapse: collapse;
-            width: 50%;
+            width: 70%;
         }
+
         th, td {
             padding: 8px;
             border: 1px solid #ccc;
         }
+
         form {
             margin-top: 10px;
         }
+
+        button {
+            cursor: pointer;
+        }
+
+        .inline-form {
+            display: inline;
+        }
+
+        .message {
+            white-space: pre-line;
+            padding: 12px;
+            background-color: #efe3b8;
+            border: 1px solid #b89f5d;
+        }
     </style>
 </head>
+
 <body>
     <h1>Welcome, {{ player.name }}</h1>
-    <h3>Current City: {{ city }}</h3>
+
+    <h3>
+        Current City:
+        {% if player.city in MAP %}
+            {{ MAP[player.city].name }}
+        {% else %}
+            {{ city }}
+        {% endif %}
+    </h3>
+
+    {% if message %}
+        <div class="section message">
+            <strong>{{ message }}</strong>
+        </div>
+    {% endif %}
 
     <div class="section">
-    <h3>Stats</h3>
-    <ul>
-        <li>Health: {{ player.current_health }} / {{ total_stats.max_health }}</li>
-        <li>Strength: {{ total_stats.strength }} (base: {{ player.base_stats.strength }})</li>
-        <li>Agility: {{ total_stats.agility }} (base: {{ player.base_stats.agility }})</li>
-        <li>Vitality: {{ total_stats.vitality }} (base: {{ player.base_stats.vitality }})</li>
-        <li>Intellect: {{ total_stats.intellect }} (base: {{ player.base_stats.intellect }})</li>
-        <li>Luck: {{ total_stats.luck }} (base: {{ player.base_stats.luck }})</li>
-        <li>Damage: {{ total_stats.damage_min }} - {{ total_stats.damage_max }}</li>
-        <li>Armor: {{ total_stats.armor }}</li>
-        <li>Hit Chance: {{ total_stats.hit_chance }}%</li>
-        <li>Dodge Chance: {{ total_stats.dodge_chance }}%</li>
-        <li>Gold: {{ player.gold }}</li>
-        <li>Reputation: {{ player.reputation }}</li>
-        <li>Trade XP: {{ player.trade_xp }}</li>
-        <li>Trade Bonus: {{ (trade_bonus * 100) | round(1) }}% (max: 30%)</li>
-    </ul>
-</div>
+        <h3>Stats</h3>
+        <ul>
+            <li>Health: {{ player.current_health }} / {{ total_stats.max_health }}</li>
+            <li>Strength: {{ total_stats.strength }} (base: {{ player.base_stats.strength }})</li>
+            <li>Agility: {{ total_stats.agility }} (base: {{ player.base_stats.agility }})</li>
+            <li>Vitality: {{ total_stats.vitality }} (base: {{ player.base_stats.vitality }})</li>
+            <li>Intellect: {{ total_stats.intellect }} (base: {{ player.base_stats.intellect }})</li>
+            <li>Luck: {{ total_stats.luck }} (base: {{ player.base_stats.luck }})</li>
+            <li>Damage: {{ total_stats.damage_min }} - {{ total_stats.damage_max }}</li>
+            <li>Armor: {{ total_stats.armor }}</li>
+            <li>Hit Chance: {{ total_stats.hit_chance }}%</li>
+            <li>Dodge Chance: {{ total_stats.dodge_chance }}%</li>
+            <li>Gold: {{ player.gold }}</li>
+            <li>Reputation: {{ player.reputation }}</li>
+            <li>Trade XP: {{ player.trade_xp }}</li>
+            <li>Trade Bonus: {{ (trade_bonus * 100) | round(1) }}% (max: 30%)</li>
+        </ul>
+    </div>
 
-<div class="panel">
-    <h2>Map & Travel</h2>
+    <div class="panel">
+        <h2>Map & Travel</h2>
 
-    {% if player.travel.active %}
-        <p>
-            Traveling from
-            <strong>{{ MAP[player.travel.from].name }}</strong>
-            to
-            <strong>{{ MAP[player.travel.to].name }}</strong>
-        </p>
+        {% if player.travel.active %}
+            <p>
+                Traveling from
+                <strong>{{ MAP[player.travel.from].name }}</strong>
+                to
+                <strong>{{ MAP[player.travel.to].name }}</strong>
+            </p>
 
-        <p>Route: {{ player.travel.route_name }}</p>
-        <p>Progress: {{ player.travel.progress }} / {{ player.travel.distance }}</p>
-        <p>Danger: {{ player.travel.danger }}</p>
+            <p>Route: {{ player.travel.route_name }}</p>
+            <p>Progress: {{ player.travel.progress }} / {{ player.travel.distance }}</p>
+            <p>Danger: {{ player.travel.danger }}</p>
 
-        <form method="post">
-            <button name="action" value="Continue Travel">Continue Travel</button>
-        </form>
-
-    {% else %}
-        <p>
-            Current city:
-            <strong>{{ MAP[player.city].name }}</strong>
-        </p>
-
-        <p>{{ MAP[player.city].description }}</p>
-
-        <h3>Available routes</h3>
-
-        {% for dest_id, route in available_destinations.items() %}
-            <form method="post">
-                <input type="hidden" name="destination" value="{{ dest_id }}">
-                <button name="action" value="Travel">
-                    Travel to {{ MAP[dest_id].name }}
-                    — {{ route.route_name }}
-                    — Distance {{ route.distance }}
-                    — Danger {{ route.danger }}
+            <form method="post" action="{{ url_for('action') }}">
+                <button type="submit" name="action" value="Continue Travel">
+                    Continue Travel
                 </button>
             </form>
-        {% endfor %}
-    {% endif %}
-</div>
+
+        {% else %}
+            <p>
+                Current city:
+                <strong>{{ MAP[player.city].name }}</strong>
+            </p>
+
+            <p>{{ MAP[player.city].description }}</p>
+
+            <h3>Available routes</h3>
+
+            {% if available_destinations %}
+                {% for dest_id, route in available_destinations.items() %}
+                    <form method="post" action="{{ url_for('action') }}">
+                        <input type="hidden" name="destination" value="{{ dest_id }}">
+                        <button type="submit" name="action" value="Travel">
+                            Travel to {{ MAP[dest_id].name }}
+                            — {{ route.route_name }}
+                            — Distance {{ route.distance }}
+                            — Danger {{ route.danger }}
+                        </button>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <p>No available routes.</p>
+            {% endif %}
+        {% endif %}
+    </div>
 
     <div class="section">
         <h3>Trade Goods</h3>
@@ -104,17 +149,19 @@
         </ul>
     </div>
 
-   <div class="section">
-    <h3>Equipment</h3>
-    <ul>
-        {% if player.equipment %}
-            {% for slot, item_id in player.equipment.items() %}
-                <li>
-                    <strong>{{ slot }}</strong>:
-                    {% if item_id and item_id in player.owned_items %}
-                        {% set template = ITEM_TEMPLATES[player.owned_items[item_id].template_id] %}
+    <div class="section">
+        <h3>Equipment</h3>
+        <ul>
+            {% if player.equipment %}
+                {% for slot, item_id in player.equipment.items() %}
+                    <li>
+                        <strong>{{ slot }}</strong>:
+
+                        {% if item_id and item_id in player.owned_items %}
+                            {% set template = ITEM_TEMPLATES[player.owned_items[item_id].template_id] %}
 
                             {{ template.name }}
+
                             {% if template.base_stats %}
                                 (
                                 {% for stat, value in template.base_stats.items() %}
@@ -129,152 +176,160 @@
                                 )
                             {% endif %}
 
-                        <form method="post" action="/action" style="display:inline;">
-                            <input type="hidden" name="action" value="Unequip">
-                            <input type="hidden" name="item_name" value="{{ slot }}">
-                            <button type="submit">Unequip</button>
-                        </form>
-
-                    {% else %}
-                        None
-                    {% endif %}
-                </li>
-            {% endfor %}
-        {% else %}
-            <li>No equipment data yet.</li>
-        {% endif %}
-    </ul>
-</div>
-
-   <div class="section">
-    <h3>Item Inventory</h3>
-    <ul>
-        {% if player.inventory_ids %}
-            {% for item_id in player.inventory_ids %}
-                {% if item_id in player.owned_items %}
-                    {% set item = player.owned_items[item_id] %}
-                    {% set template = ITEM_TEMPLATES[item.template_id] %}
-
-                    <li>
-                        {{ template.name }}
-                         Value: {{ template.value }} (Sell: {{ template.value // 2 }})
-                            {% if template.base_stats %}
-                                (
-                                {% for stat, value in template.base_stats.items() %}
-                                    {% if stat == "damage_min" %}
-                                        {{ value }}-
-                                    {% elif stat == "damage_max" %}
-                                        {{ value }} DMG
-                                    {% else %}
-                                        {{ stat|capitalize }} +{{ value }}
-                                    {% endif %}
-                                {% endfor %}
-                                )
-                            {% endif %}
-
-                        {% if template.equip_slot %}
-                            <form method="post" action="/action" style="display:inline;">
-                                <input type="hidden" name="action" value="Equip">
-                                <input type="hidden" name="item_name" value="{{ item_id }}">
-                                <button type="submit">Equip</button>
+                            <form method="post" action="{{ url_for('action') }}" class="inline-form">
+                                <input type="hidden" name="action" value="Unequip">
+                                <input type="hidden" name="item_name" value="{{ slot }}">
+                                <button type="submit">Unequip</button>
                             </form>
+                        {% else %}
+                            None
                         {% endif %}
-
-                        <form method="post" action="/action" style="display:inline;">
-                            <input type="hidden" name="action" value="SellItem">
-                            <input type="hidden" name="item_name" value="{{ item_id }}">
-                            <button type="submit">Sell</button>
-                        </form>
-
-                        <form method="post" action="/action" style="display:inline;">
-                            <input type="hidden" name="action" value="DropItem">
-                            <input type="hidden" name="item_name" value="{{ item_id }}">
-                            <button type="submit">Drop</button>
-                        </form>
                     </li>
-                {% else %}
-                    <li>Broken item reference: {{ item_id }}</li>
-                {% endif %}
-            {% endfor %}
-        {% else %}
-            <li>Empty</li>
-        {% endif %}
-    </ul>
-</div>
-
-    <div class="section">
-        <h3>Market in {{ city }}</h3>
-        <table>
-            <tr>
-                <th>Item</th>
-                <th>Buy Price</th>
-                <th>Sell Price</th>
-            </tr>
-            {% for item, prices in market.items() %}
-            <tr>
-                <td>{{ item }}</td>
-                <td>
-    {{ (prices.buy * (1 - trade_bonus)) | round(0) | int }}
-    ({{ prices.buy }})
-</td>
-<td>
-    {{ (prices.sell * (1 + trade_bonus)) | round(0) | int }}
-    ({{ prices.sell }})
-</td>
-            </tr>
-            {% endfor %}
-        </table>
-
-        <form method="post" action="/action">
-            <select name="item_name">
-                {% for item in market.keys() %}
-                    <option value="{{ item }}">{{ item }}</option>
                 {% endfor %}
-            </select>
-            <button type="submit" name="action" value="Buy">Buy</button>
-            <button type="submit" name="action" value="Sell">Sell</button>
-        </form>
+            {% else %}
+                <li>No equipment data yet.</li>
+            {% endif %}
+        </ul>
     </div>
 
     <div class="section">
-        <h3>Travel</h3>
-        <form method="post" action="/action">
-            <select name="destination">
-                {% for city_name in CITIES.keys() %}
-                    {% if city_name != city %}
-                    <option value="{{ city_name }}">{{ city_name }}</option>
+        <h3>Item Inventory</h3>
+        <ul>
+            {% if player.inventory_ids %}
+                {% for item_id in player.inventory_ids %}
+                    {% if item_id in player.owned_items %}
+                        {% set item = player.owned_items[item_id] %}
+                        {% set template = ITEM_TEMPLATES[item.template_id] %}
+
+                        <li>
+                            {{ template.name }}
+                            — Value: {{ template.value }}
+                            — Sell: {{ template.value // 2 }}
+
+                            {% if template.base_stats %}
+                                (
+                                {% for stat, value in template.base_stats.items() %}
+                                    {% if stat == "damage_min" %}
+                                        {{ value }}-
+                                    {% elif stat == "damage_max" %}
+                                        {{ value }} DMG
+                                    {% else %}
+                                        {{ stat|capitalize }} +{{ value }}
+                                    {% endif %}
+                                {% endfor %}
+                                )
+                            {% endif %}
+
+                            {% if template.equip_slot %}
+                                <form method="post" action="{{ url_for('action') }}" class="inline-form">
+                                    <input type="hidden" name="action" value="Equip">
+                                    <input type="hidden" name="item_name" value="{{ item_id }}">
+                                    <button type="submit">Equip</button>
+                                </form>
+                            {% endif %}
+
+                            <form method="post" action="{{ url_for('action') }}" class="inline-form">
+                                <input type="hidden" name="action" value="SellItem">
+                                <input type="hidden" name="item_name" value="{{ item_id }}">
+                                <button type="submit">Sell</button>
+                            </form>
+
+                            <form method="post" action="{{ url_for('action') }}" class="inline-form">
+                                <input type="hidden" name="action" value="DropItem">
+                                <input type="hidden" name="item_name" value="{{ item_id }}">
+                                <button type="submit">Drop</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li>Broken item reference: {{ item_id }}</li>
                     {% endif %}
                 {% endfor %}
-            </select>
-            <button type="submit" name="action" value="Travel">Travel</button>
-        </form>
+            {% else %}
+                <li>Empty</li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <div class="section">
+        <h3>
+            Market in
+            {% if player.city in MAP %}
+                {{ MAP[player.city].name }}
+            {% else %}
+                {{ city }}
+            {% endif %}
+        </h3>
+
+        {% if player.travel.active %}
+            <p>You cannot trade while traveling.</p>
+        {% else %}
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th>Buy Price</th>
+                    <th>Sell Price</th>
+                </tr>
+
+                {% for item, prices in market.items() %}
+                    <tr>
+                        <td>{{ item }}</td>
+                        <td>
+                            {{ (prices.buy * (1 - trade_bonus)) | round(0) | int }}
+                            (base: {{ prices.buy }})
+                        </td>
+                        <td>
+                            {{ (prices.sell * (1 + trade_bonus)) | round(0) | int }}
+                            (base: {{ prices.sell }})
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <form method="post" action="{{ url_for('action') }}">
+                <select name="item_name">
+                    {% for item in market.keys() %}
+                        <option value="{{ item }}">{{ item }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="number" name="quantity" value="1" min="1">
+
+                <button type="submit" name="action" value="Buy">Buy</button>
+                <button type="submit" name="action" value="Sell">Sell</button>
+            </form>
+        {% endif %}
     </div>
 
     <div class="section">
         <h3>Other Actions</h3>
-        <form method="post" action="/action">
-            <button type="submit" name="action" value="Fight">Fight</button>
+
+        <form method="post" action="{{ url_for('action') }}">
+            <button type="submit" name="action" value="Fight">Fight Random Enemy</button>
             <button type="submit" name="action" value="Rest">Rest</button>
         </form>
     </div>
 
     <div class="section">
-    <h3>Training</h3>
-    <form method="post" action="/action">
-        <select name="item_name">
-            <option value="strength">Strength</option>
-            <option value="agility">Agility</option>
-            <option value="vitality">Vitality</option>
-            <option value="intellect">Intellect</option>
-        </select>
-        <button type="submit" name="action" value="Train">Train</button>
-    </form>
-</div>
+        <h3>Training</h3>
+
+        <form method="post" action="{{ url_for('action') }}">
+            <select name="item_name">
+                <option value="strength">Strength</option>
+                <option value="agility">Agility</option>
+                <option value="vitality">Vitality</option>
+                <option value="intellect">Intellect</option>
+            </select>
+
+            <button type="submit" name="action" value="Train">Train</button>
+        </form>
+    </div>
 
     <div class="section">
-        <h3>Fight an enemy</h3>
-        <form method="POST" action="/action">
+        <h3>Fight an Enemy</h3>
+
+        <form method="post" action="{{ url_for('action') }}">
             <input type="hidden" name="action" value="Fight">
+
             <select name="item_name">
                 <option value="">Random Enemy</option>
                 <option value="Desert Bandit">Desert Bandit</option>
@@ -283,15 +338,9 @@
                 <option value="Nomad Warrior">Nomad Warrior</option>
                 <option value="Assassin">Assassin</option>
             </select>
+
             <button type="submit">Fight!</button>
         </form>
     </div>
-
-    {% if message %}
-    <div class="section">
-        <strong style="white-space: pre-line;">{{ message }}</strong>
-    </div>
-    {% endif %}
-
 </body>
 </html>

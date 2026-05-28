@@ -1,6 +1,7 @@
-from game.medieval_rpg_web.game import player
 import random
+
 from .data import CITIES
+from .map import MAP
 from .travel import start_travel, continue_travel
 from .items import create_item_instance
 from .enemies import LOOT_TABLES
@@ -14,6 +15,7 @@ from .enemies import (
 from .utils import compute_total_stats, get_trade_bonus
 from .inventory_service import equip_item, unequip_item, sell_item, drop_item
 
+
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
     "Mercenary": generate_mercenary,
@@ -23,10 +25,61 @@ ENEMY_GENERATORS = {
 }
 
 
-def handle_action(action, player, item_name=None, quantity=1, destination=None):
-    message = ""
+DEFAULT_TRAVEL = {
+    "active": False,
+    "from": None,
+    "to": None,
+    "progress": 0,
+    "distance": 0,
+    "danger": 0,
+    "route_name": None,
+}
 
-    # safety migration for older session data
+
+def normalize_city(player):
+    """
+    Internal city IDs should be lowercase:
+    baghdad, damascus, aleppo, mosul
+    """
+
+    player["city"] = player.get("city", "baghdad").lower()
+
+    if player["city"] not in MAP:
+        player["city"] = "baghdad"
+
+    return player["city"]
+
+
+def get_market_for_player(player):
+    """
+    Bridge between lowercase MAP IDs and older CITIES keys like 'Baghdad'.
+    """
+
+    city_id = normalize_city(player)
+
+    possible_keys = [
+        city_id,
+        city_id.title(),
+        MAP.get(city_id, {}).get("name"),
+    ]
+
+    for key in possible_keys:
+        if key in CITIES:
+            return CITIES[key]
+
+    return {}
+
+
+def migrate_player(player):
+    """
+    Keeps old session saves compatible with current systems.
+    """
+
+    normalize_city(player)
+
+    if "travel" not in player:
+        player["travel"] = DEFAULT_TRAVEL.copy()
+
     if "trade_inventory" not in player:
         player["trade_inventory"] = {
             "Spices": 0,
@@ -38,10 +91,10 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
 
     if "base_stats" not in player:
         player["base_stats"] = {
-            "strength": 5,
+            "strength": player.get("strength", 5),
             "agility": 5,
             "vitality": 5,
-            "intellect": 5,
+            "intellect": player.get("intellect", 5),
             "luck": 3,
         }
 
@@ -51,9 +104,48 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
     if "trade_xp" not in player:
         player["trade_xp"] = 0
 
+    if "owned_items" not in player:
+        player["owned_items"] = {}
+
+    if "inventory_ids" not in player:
+        player["inventory_ids"] = []
+
+    if "equipment" not in player:
+        player["equipment"] = {
+            "weapon": None,
+            "head": None,
+            "chest": None,
+            "ring_1": None,
+            "ring_2": None,
+        }
+
+    if "gold" not in player:
+        player["gold"] = 100
+
+    if "reputation" not in player:
+        player["reputation"] = 0
+
+    return player
+
+
+def handle_action(action, player, item_name=None, quantity=1, destination=None):
+    player = migrate_player(player)
+    market = get_market_for_player(player)
+
+    message = ""
+
+    # ----------------------------
+    # BUY TRADE GOODS
+    # ----------------------------
     if action == "Buy":
-        if item_name and item_name in CITIES[player["city"]]:
-            base_price = CITIES[player["city"]][item_name]["buy"]
+        if player["travel"]["active"]:
+            message = "You cannot buy goods while traveling."
+
+        elif not item_name or item_name not in market:
+            message = "Invalid item to buy."
+
+        else:
+            base_price = market[item_name]["buy"]
             trade_bonus = get_trade_bonus(player)
 
             final_unit_price = max(1, round(base_price * (1 - trade_bonus)))
@@ -61,7 +153,9 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
 
             if player["gold"] >= total_price:
                 player["gold"] -= total_price
-                player["trade_inventory"][item_name] = player["trade_inventory"].get(item_name, 0) + quantity
+                player["trade_inventory"][item_name] = (
+                    player["trade_inventory"].get(item_name, 0) + quantity
+                )
                 player["trade_xp"] += max(1, quantity)
 
                 discount_percent = round(trade_bonus * 100, 1)
@@ -71,12 +165,22 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
                 )
             else:
                 message = f"Not enough gold to buy. You need {total_price} gold."
-        else:
-            message = "Invalid item to buy."
 
+    # ----------------------------
+    # SELL TRADE GOODS
+    # ----------------------------
     elif action == "Sell":
-        if item_name and player["trade_inventory"].get(item_name, 0) >= quantity:
-            base_price = CITIES[player["city"]][item_name]["sell"]
+        if player["travel"]["active"]:
+            message = "You cannot sell goods while traveling."
+
+        elif not item_name or item_name not in market:
+            message = "Invalid item to sell here."
+
+        elif player["trade_inventory"].get(item_name, 0) < quantity:
+            message = "You don't have enough items to sell."
+
+        else:
+            base_price = market[item_name]["sell"]
             trade_bonus = get_trade_bonus(player)
 
             final_unit_price = max(1, round(base_price * (1 + trade_bonus)))
@@ -91,16 +195,19 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
                 f"Sold {quantity} {item_name}(s) for {total_price} gold "
                 f"({final_unit_price} each, +{bonus_percent}% trade bonus)."
             )
-        else:
-            message = "You don't have enough items to sell."
 
+    # ----------------------------
+    # MAP TRAVEL
+    # ----------------------------
     elif action == "Travel":
-        if destination and destination in CITIES:
-            player["city"] = destination
-            message = f"You traveled to {destination}."
-        else:
-            message = "Invalid destination."
+        message = start_travel(player, destination)
 
+    elif action == "Continue Travel":
+        message = continue_travel(player)
+
+    # ----------------------------
+    # FIGHT
+    # ----------------------------
     elif action == "Fight":
         if item_name in ENEMY_GENERATORS:
             enemy = ENEMY_GENERATORS[item_name]()
@@ -117,8 +224,6 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
         player_strength = stats.get("strength", 5)
         player_armor = stats.get("armor", 0)
 
-        # simple enemy defaults for now
-       
         enemy_hit_chance = enemy.hit_chance
         enemy_dodge_chance = enemy.dodge_chance
         enemy_damage_min = enemy.damage_min
@@ -126,14 +231,14 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
         enemy_armor = enemy.armor
 
         while player["current_health"] > 0 and enemy.health > 0:
-            # ----------------------------
-            # PLAYER ATTACK
-            # ----------------------------
+            # Player attack
             hit_roll = random.randint(1, 100)
+
             if hit_roll > player_hit_chance:
                 fight_log.append(f"You miss the {enemy.name}!")
             else:
                 dodge_roll = random.randint(1, 100)
+
                 if dodge_roll <= enemy_dodge_chance:
                     fight_log.append(f"The {enemy.name} dodges your attack!")
                 else:
@@ -155,14 +260,12 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
                 player["gold"] += gold_reward
                 player["reputation"] += rep_reward
 
-                fight_log.append(f"You earned {gold_reward} gold and {rep_reward} reputation.")
+                fight_log.append(
+                    f"You earned {gold_reward} gold and {rep_reward} reputation."
+                )
 
-                # ----------------------------
-                # ITEM DROP
-                # ----------------------------
                 luck = stats.get("luck", 0)
-                drop_chance = 25 + luck * 2  # % chance
-
+                drop_chance = 25 + luck * 2
                 roll = random.randint(1, 100)
 
                 if roll <= drop_chance:
@@ -176,24 +279,26 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
                         player["inventory_ids"].append(item["instance_id"])
 
                         from .items import get_template
+
                         template = get_template(template_id)
+                        loot_name = template["name"] if template else template_id
 
-                        item_name = template["name"] if template else template_id
-
-                        fight_log.append(f"You found: {item_name}!")
-                        break
+                        fight_log.append(f"You found: {loot_name}!")
+                    else:
+                        fight_log.append("No item dropped.")
                 else:
                     fight_log.append("No item dropped.")
-                    break
 
-            # ----------------------------
-            # ENEMY ATTACK
-            # ----------------------------
+                break
+
+            # Enemy attack
             enemy_hit_roll = random.randint(1, 100)
+
             if enemy_hit_roll > enemy_hit_chance:
                 fight_log.append(f"The {enemy.name} misses you!")
             else:
                 player_dodge_roll = random.randint(1, 100)
+
                 if player_dodge_roll <= player_dodge_chance:
                     fight_log.append(f"You dodge the {enemy.name}'s attack!")
                 else:
@@ -212,17 +317,27 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
 
         message = "\n".join(fight_log)
 
+    # ----------------------------
+    # REST
+    # ----------------------------
     elif action == "Rest":
         stats = compute_total_stats(player)
         player["current_health"] = stats.get("max_health", 100)
         message = "You have rested and restored your health."
 
+    # ----------------------------
+    # TRAIN
+    # ----------------------------
     elif action == "Train":
         valid_skills = ["strength", "agility", "vitality", "intellect"]
         skill = item_name if item_name in valid_skills else "strength"
+
         player["base_stats"][skill] += 1
         message = f"You improved your {skill} through training!"
-    
+
+    # ----------------------------
+    # EQUIPMENT / INVENTORY
+    # ----------------------------
     elif action == "Equip":
         if item_name:
             success, result_message = equip_item(player, item_name)
@@ -250,13 +365,6 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
             message = result_message
         else:
             message = "No item selected to drop."
-        
-    elif action == "Travel":
-        destination = form.get("destination")
-        message = start_travel(player, destination)
-
-    elif action == "Continue Travel":
-        message = continue_travel(player)
 
     else:
         message = "Unknown action."

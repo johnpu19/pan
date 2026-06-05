@@ -1,9 +1,157 @@
 {% extends "base.html" %}
 {% block content %}
 
-    <div class="panel">
-        <h2>Map & Travel</h2>
+<div class="panel">
+    <h2>Map & Travel</h2>
 
+    <!--
+            City coordinates within the SVG viewport (600 x 340).
+            Positions are geographically approximate:
+              Damascus  — south-west
+              Aleppo    — north-west
+              Baghdad   — south-east
+              Mosul     — north-east
+        -->
+    {% set city_coords = {
+    "damascus": (120, 230),
+    "aleppo": (130, 80),
+    "baghdad": (430, 240),
+    "mosul": (420, 75)
+    } %}
+    
+    {% if player.travel.active %}
+    {% set from_xy = city_coords[player.travel.from] %}
+    {% set to_xy = city_coords[player.travel.to] %}
+    {% set pct = (player.travel.progress / player.travel.distance) if player.travel.distance > 0 else 0 %}
+    {% set marker_x = from_xy[0] + (to_xy[0] - from_xy[0]) * pct %}
+    {% set marker_y = from_xy[1] + (to_xy[1] - from_xy[1]) * pct %}
+    {% endif %}
+    
+    <svg id="game-map" viewBox="0 0 600 340"
+        style="width:100%; max-width:600px; display:block; border:1px solid #c9b88c; background:#f0e6c0; cursor:default">
+    
+        <!-- ── Desert texture dots ── -->
+        {% for dx in range(20, 580, 40) %}
+        {% for dy in range(20, 320, 40) %}
+        <circle cx="{{ dx + loop.index * 3 % 15 }}" cy="{{ dy + loop.index * 5 % 12 }}" r="1" fill="#c8b078"
+            opacity="0.4" />
+        {% endfor %}
+        {% endfor %}
+    
+        <!-- ── Route lines ── -->
+        {% set drawn = [] %}
+        {% for city_id, city_data in MAP.items() %}
+        {% set ax, ay = city_coords[city_id] %}
+        {% for dest_id in city_data.connections %}
+        {% set pair = [city_id, dest_id] | sort | join("-") %}
+        {% if pair not in drawn %}
+        {% set bx, by = city_coords[dest_id] %}
+        {% if player.travel.active and
+        ((player.travel.from == city_id and player.travel.to == dest_id) or
+        (player.travel.from == dest_id and player.travel.to == city_id)) %}
+        <line x1="{{ ax }}" y1="{{ ay }}" x2="{{ bx }}" y2="{{ by }}" stroke="#8b6914" stroke-width="3"
+            stroke-dasharray="6,4" />
+        {% else %}
+        <line x1="{{ ax }}" y1="{{ ay }}" x2="{{ bx }}" y2="{{ by }}" stroke="#b89f5d" stroke-width="2"
+            stroke-dasharray="5,5" opacity="0.7" />
+        {% endif %}
+        {% set _ = drawn.append(pair) %}
+        {% endif %}
+        {% endfor %}
+        {% endfor %}
+    
+        <!-- ── Travel progress marker ── -->
+        {% if player.travel.active %}
+        <circle cx="{{ marker_x }}" cy="{{ marker_y }}" r="7" fill="#8b1a1a" stroke="#f9f5e3" stroke-width="2" />
+        <text x="{{ marker_x }}" y="{{ marker_y - 12 }}" text-anchor="middle" font-size="10" fill="#3e2f1c"
+            font-family="Georgia,serif">
+            ⟶
+        </text>
+        {% endif %}
+    
+        <!-- ── City nodes ── -->
+        {% for city_id, city_data in MAP.items() %}
+        {% set cx, cy = city_coords[city_id] %}
+        {% set is_current = (city_id == player.city and not player.travel.active) %}
+        {% set is_reachable = (city_id in available_destinations and not player.travel.active) %}
+        {% set is_travel_dst = (player.travel.active and city_id == player.travel.to) %}
+    
+        <!-- Clickable area (larger hit target) -->
+        {% if is_reachable %}
+        <circle cx="{{ cx }}" cy="{{ cy }}" r="28" fill="transparent" class="city-target" data-city="{{ city_id }}"
+            style="cursor:pointer" />
+        {% endif %}
+    
+        <!-- Glow ring for current city -->
+        {% if is_current %}
+        <circle cx="{{ cx }}" cy="{{ cy }}" r="22" fill="none" stroke="#c8942a" stroke-width="2" opacity="0.6" />
+        {% endif %}
+    
+        <!-- City circle -->
+        <circle cx="{{ cx }}" cy="{{ cy }}" r="14"
+            fill="{% if is_current %}#c8942a{% elif is_travel_dst %}#8b6914{% elif is_reachable %}#fff8dc{% else %}#d4bc7a{% endif %}"
+            stroke="{% if is_current %}#3e2f1c{% elif is_reachable %}#8b6914{% else %}#a08040{% endif %}"
+            stroke-width="{% if is_current or is_reachable %}2{% else %}1{% endif %}"
+            class="{% if is_reachable %}city-target{% endif %}" data-city="{{ city_id }}"
+            style="{% if is_reachable %}cursor:pointer{% endif %}" />
+    
+        <!-- City icon -->
+        <text cx="{{ cx }}" cy="{{ cy }}" x="{{ cx }}" y="{{ cy + 5 }}" text-anchor="middle" font-size="13"
+            style="pointer-events:none; user-select:none">
+            {% if is_current %}🏛{% elif is_travel_dst %}⟶{% else %}🏰{% endif %}
+        </text>
+    
+        <!-- City name label -->
+        {% set label_y = cy + 30 if cy < 160 else cy - 22 %} <text x="{{ cx }}" y="{{ label_y }}" text-anchor="middle"
+            font-size="12" font-family="Georgia,serif" fill="{% if is_current %}#3e2f1c{% else %}#5a4020{% endif %}"
+            font-weight="{% if is_current %}bold{% else %}normal{% endif %}" style="pointer-events:none; user-select:none">
+            {{ city_data.name }}
+            </text>
+    
+            <!-- Route info tooltip on reachable cities -->
+            {% if is_reachable %}
+            {% set route = available_destinations[city_id] %}
+            {% set info_y = cy + 44 if cy < 160 else cy - 36 %} <text x="{{ cx }}" y="{{ info_y }}" text-anchor="middle"
+                font-size="9" font-family="Georgia,serif" fill="#7a5c20" style="pointer-events:none; user-select:none">
+                {{ route.distance }}d · danger {{ route.danger }}
+                </text>
+                {% endif %}
+                {% endfor %}
+    
+                <!-- ── Legend ── -->
+                <circle cx="16" cy="310" r="6" fill="#c8942a" stroke="#3e2f1c" stroke-width="1.5" />
+                <text x="26" y="314" font-size="9" font-family="Georgia,serif" fill="#3e2f1c">You are here</text>
+                <circle cx="100" cy="310" r="6" fill="#fff8dc" stroke="#8b6914" stroke-width="1.5" />
+                <text x="110" y="314" font-size="9" font-family="Georgia,serif" fill="#3e2f1c">Can travel</text>
+                <circle cx="175" cy="310" r="6" fill="#d4bc7a" stroke="#a08040" stroke-width="1" />
+                <text x="185" y="314" font-size="9" font-family="Georgia,serif" fill="#3e2f1c">Not connected</text>
+    </svg>
+    
+    <!-- Hidden travel forms — submitted by JS when a city is clicked -->
+    {% if not player.travel.active %}
+    <div id="travel-forms" style="display:none">
+        {% for dest_id in available_destinations %}
+        <form id="travel-form-{{ dest_id }}" method="post" action="{{ url_for('action') }}">
+            <input type="hidden" name="return_to" value="world">
+            <input type="hidden" name="destination" value="{{ dest_id }}">
+            <input type="hidden" name="action" value="Travel">
+        </form>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <script>
+        document.querySelectorAll(".city-target").forEach(function (el) {
+            el.addEventListener("click", function () {
+                var cityId = this.getAttribute("data-city");
+                var form = document.getElementById("travel-form-" + cityId);
+                if (form) form.submit();
+            });
+        });
+    </script>
+    
+    <!-- ── Text panel below map ── -->
+    <div style="margin-top:16px">
         {% if player.travel.active %}
             <p>
                 Traveling from
@@ -11,29 +159,18 @@
                 to
                 <strong>{{ MAP[player.travel.to].name }}</strong>
             </p>
-
             <p>Route: {{ player.travel.route_name }}</p>
             <p>Progress: {{ player.travel.progress }} / {{ player.travel.distance }}</p>
             <p>Danger: {{ player.travel.danger }}</p>
-
             <form method="post" action="{{ url_for('action') }}">
                 <input type="hidden" name="return_to" value="world">
-                <button type="submit" name="action" value="Continue Travel">
-                    Continue Travel
-                </button>
+                <button type="submit" name="action" value="Continue Travel">Continue Travel</button>
             </form>
-
         {% else %}
-            <p>
-                Current city:
-                <strong>{{ MAP[player.city].name }}</strong>
-            </p>
-
+            <p>Current city: <strong>{{ MAP[player.city].name }}</strong></p>
             <p>{{ MAP[player.city].description }}</p>
-
-            <h3>Available routes</h3>
-
             {% if available_destinations %}
+                <p style="color:#5a4020; font-size:13px"><em>Click a city on the map to travel there, or use the buttons below.</em></p>
                 {% for dest_id, route in available_destinations.items() %}
                     <form method="post" action="{{ url_for('action') }}">
                         <input type="hidden" name="return_to" value="world">
@@ -46,10 +183,9 @@
                         </button>
                     </form>
                 {% endfor %}
-            {% else %}
-                <p>No available routes.</p>
             {% endif %}
         {% endif %}
     </div>
+</div>
 
 {% endblock %}

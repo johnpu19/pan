@@ -112,6 +112,25 @@
             padding: 20px;
         }
     </style>
+{% macro select(name, options, default="") %}
+{#
+Renders a <select> that restores the last submitted value from last_form.
+    options: list of (value, label) tuples, or just strings (value == label).
+    #}
+    {% set saved = last_form.get(name, default) %}
+    <select name="{{ name }}">
+        {% for opt in options %}
+        {% if opt is string %}
+        {% set val = opt %}
+        {% set label = opt %}
+        {% else %}
+        {% set val = opt[0] %}
+        {% set label = opt[1] %}
+        {% endif %}
+        <option value="{{ val }}" {% if val==saved %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+    </select>
+    {% endmacro %}
 </head>
 <body>
 

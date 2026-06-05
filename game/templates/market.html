@@ -38,14 +38,8 @@
 
             <form method="post" action="{{ url_for('action') }}">
                 <input type="hidden" name="return_to" value="market">
-                <select name="item_name">
-                    {% for item in market.keys() %}
-                        <option value="{{ item }}">{{ item }}</option>
-                    {% endfor %}
-                </select>
-
+                {{ select("item_name", market.keys() | list) }}
                 <input type="number" name="quantity" value="1" min="1">
-
                 <button type="submit" name="action" value="Buy">Buy</button>
                 <button type="submit" name="action" value="Sell">Sell</button>
             </form>
@@ -71,13 +65,8 @@
 
         <form method="post" action="{{ url_for('action') }}">
             <input type="hidden" name="return_to" value="market">
-            <select name="item_name">
-                <option value="strength">Strength</option>
-                <option value="agility">Agility</option>
-                <option value="vitality">Vitality</option>
-                <option value="intellect">Intellect</option>
-            </select>
-
+            {{ select("item_name",
+            [("strength","Strength"),("agility","Agility"),("vitality","Vitality"),("intellect","Intellect")]) }}
             <button type="submit" name="action" value="Train">Train</button>
         </form>
     </div>
@@ -88,16 +77,8 @@
         <form method="post" action="{{ url_for('action') }}">
             <input type="hidden" name="return_to" value="market">
             <input type="hidden" name="action" value="Fight">
-
-            <select name="item_name">
-                <option value="">Random Enemy</option>
-                <option value="Desert Bandit">Desert Bandit</option>
-                <option value="Mercenary">Mercenary</option>
-                <option value="Rival Trader">Rival Trader</option>
-                <option value="Nomad Warrior">Nomad Warrior</option>
-                <option value="Assassin">Assassin</option>
-            </select>
-
+            {{ select("item_name", [("","Random Enemy"),("Desert Bandit","Desert Bandit"),("Mercenary","Mercenary"),("Rival
+            Trader","Rival Trader"),("Nomad Warrior","Nomad Warrior"),("Assassin","Assassin")]) }}
             <button type="submit">Fight!</button>
         </form>
     </div>

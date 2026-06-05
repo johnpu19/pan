@@ -122,7 +122,7 @@ def get_market(city_id):
     return {}
 
 
-def _render_context(player):
+def _render_context(player, page=None):
     city = player["city"]
     market = get_market(city)
 
@@ -133,6 +133,8 @@ def _render_context(player):
     available_destinations = {}
     if not player["travel"]["active"]:
         available_destinations = get_available_destinations(player)
+
+    last_form = session.get("last_form", {}).get(page, {}) if page else {}
 
     return dict(
         player=player,
@@ -145,6 +147,7 @@ def _render_context(player):
         total_stats=total_stats,
         trade_bonus=trade_bonus,
         available_destinations=available_destinations,
+        last_form=last_form,
     )
 
 
@@ -156,21 +159,21 @@ def index():
 @app.route("/character")
 def character():
     player = get_player()
-    ctx = _render_context(player)
+    ctx = _render_context(player, "character")
     return render_template("character.html", active_page="character", **ctx)
 
 
 @app.route("/world")
 def world():
     player = get_player()
-    ctx = _render_context(player)
+    ctx = _render_context(player, "world")
     return render_template("world.html", active_page="world", **ctx)
 
 
 @app.route("/caravan")
 def caravan():
     player = get_player()
-    ctx = _render_context(player)
+    ctx = _render_context(player, "caravan")
     ctx["CAMEL_BUY_PRICE"] = CAMEL_BUY_PRICE
     ctx["CAMEL_SELL_PRICE"] = CAMEL_SELL_PRICE
     ctx["CAMEL_CAPACITY"] = CAMEL_CAPACITY
@@ -183,7 +186,7 @@ def caravan():
 @app.route("/market")
 def market():
     player = get_player()
-    ctx = _render_context(player)
+    ctx = _render_context(player, "market")
     return render_template("market.html", active_page="market", **ctx)
 
 
@@ -224,6 +227,16 @@ def action():
 
     session["player"] = updated_player
     session["message"] = message
+
+    # Save all submitted form values so the page can restore dropdowns on reload.
+    # Excludes internal fields that are not user-facing choices.
+    last_form = session.get("last_form", {})
+    last_form[return_to] = {
+        k: v
+        for k, v in request.form.items()
+        if k not in ("action", "return_to", "destination")
+    }
+    session["last_form"] = last_form
 
     pages = {
         "character": "character",

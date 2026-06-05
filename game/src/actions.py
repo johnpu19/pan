@@ -14,7 +14,7 @@ from .enemies import (
 )
 from .utils import compute_total_stats, get_trade_bonus
 from .inventory_service import equip_item, unequip_item, sell_item, drop_item
-
+from .caravan import buy_camel, sell_camel, load_cargo, unload_cargo
 
 ENEMY_GENERATORS = {
     "Desert Bandit": generate_bandit,
@@ -242,7 +242,10 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
                 if dodge_roll <= enemy_dodge_chance:
                     fight_log.append(f"The {enemy.name} dodges your attack!")
                 else:
-                    raw_damage = random.randint(player_damage_min, player_damage_max) + player_strength
+                    raw_damage = (
+                        random.randint(player_damage_min, player_damage_max)
+                        + player_strength
+                    )
                     final_damage = max(raw_damage - enemy_armor, 0)
 
                     enemy.health -= final_damage
@@ -302,7 +305,9 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
                 if player_dodge_roll <= player_dodge_chance:
                     fight_log.append(f"You dodge the {enemy.name}'s attack!")
                 else:
-                    enemy_raw_damage = random.randint(enemy_damage_min, enemy_damage_max)
+                    enemy_raw_damage = random.randint(
+                        enemy_damage_min, enemy_damage_max
+                    )
                     enemy_final_damage = max(enemy_raw_damage - player_armor, 0)
 
                     player["current_health"] -= enemy_final_damage
@@ -324,7 +329,7 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
         stats = compute_total_stats(player)
         player["current_health"] = stats.get("max_health", 100)
         message = "You have rested and restored your health."
-    
+
     elif action == "Visit Healer":
         if player["travel"]["active"]:
             message = "You cannot visit a healer while traveling."
@@ -396,6 +401,21 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
             message = result_message
         else:
             message = "No item selected to drop."
+
+    # ----------------------------
+    # CARAVAN
+    # ----------------------------
+    elif action == "BuyCamel":
+        message = buy_camel(player, quantity)
+
+    elif action == "SellCamel":
+        message = sell_camel(player, quantity)
+
+    elif action == "LoadCargo":
+        message = load_cargo(player, item_name, quantity)
+
+    elif action == "UnloadCargo":
+        message = unload_cargo(player, item_name, quantity)
 
     else:
         message = "Unknown action."

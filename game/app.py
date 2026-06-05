@@ -8,6 +8,14 @@ from src.utils import compute_total_stats, get_trade_bonus
 from src.map import MAP
 from src.travel import get_available_destinations
 
+from src.caravan import (
+    CAMEL_BUY_PRICE,
+    CAMEL_SELL_PRICE,
+    CAMEL_CAPACITY,
+    caravan_capacity,
+    caravan_cargo_total,
+    caravan_free_space,
+)
 
 app = Flask(__name__)
 app.secret_key = "sultan-secret-key"
@@ -75,6 +83,12 @@ def normalize_player(player):
             "chest": None,
             "ring_1": None,
             "ring_2": None,
+        }
+
+    if "caravan" not in player:
+        player["caravan"] = {
+            "camels": 0,
+            "cargo": {},
         }
 
     return player
@@ -153,6 +167,19 @@ def world():
     return render_template("world.html", active_page="world", **ctx)
 
 
+@app.route("/caravan")
+def caravan():
+    player = get_player()
+    ctx = _render_context(player)
+    ctx["CAMEL_BUY_PRICE"] = CAMEL_BUY_PRICE
+    ctx["CAMEL_SELL_PRICE"] = CAMEL_SELL_PRICE
+    ctx["CAMEL_CAPACITY"] = CAMEL_CAPACITY
+    ctx["caravan_capacity"] = caravan_capacity(player)
+    ctx["caravan_cargo_total"] = caravan_cargo_total(player)
+    ctx["caravan_free_space"] = caravan_free_space(player)
+    return render_template("caravan.html", active_page="caravan", **ctx)
+
+
 @app.route("/market")
 def market():
     player = get_player()
@@ -202,6 +229,7 @@ def action():
         "character": "character",
         "world": "world",
         "market": "market",
+        "caravan": "caravan",
     }
     return redirect(url_for(pages.get(return_to, "character")))
 

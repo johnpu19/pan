@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <h1>Caravan</h1>
+
+    <div class="section">
+        <h3>Caravan Status</h3>
+        <ul>
+            <li>Camels: <strong>{{ player.caravan.camels }}</strong></li>
+            <li>Cargo capacity: <strong>{{ caravan_capacity }}</strong> units
+                ({{ player.caravan.camels }} camels × {{ CAMEL_CAPACITY }} units each)</li>
+            <li>Cargo loaded: <strong>{{ caravan_cargo_total }}</strong> units</li>
+            <li>Free space: <strong>{{ caravan_free_space }}</strong> units</li>
+        </ul>
+
+        {% if player.caravan.cargo %}
+            <h3>Cargo on Caravan</h3>
+            <ul>
+                {% for item, qty in player.caravan.cargo.items() %}
+                    <li>
+                        {{ item }}: {{ qty }}
+                        <form method="post" action="{{ url_for('action') }}" class="inline-form">
+                            <input type="hidden" name="return_to"  value="caravan">
+                            <input type="hidden" name="action"     value="UnloadCargo">
+                            <input type="hidden" name="item_name"  value="{{ item }}">
+                            <input type="number"  name="quantity"  value="1" min="1" max="{{ qty }}" style="width:50px">
+                            <button type="submit">Unload</button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p><em>No cargo loaded.</em></p>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Buy / Sell Camels</h3>
+        <p>Buy price: <strong>{{ CAMEL_BUY_PRICE }} gold</strong> per camel
+            — Sell price: <strong>{{ CAMEL_SELL_PRICE }} gold</strong> per camel
+            — Each camel carries <strong>{{ CAMEL_CAPACITY }} units</strong>
+        </p>
+        <p>Your gold: <strong>{{ player.gold }}</strong></p>
+
+        <form method="post" action="{{ url_for('action') }}">
+            <input type="hidden" name="return_to" value="caravan">
+            <input type="number" name="quantity" value="1" min="1" style="width:50px">
+            <button type="submit" name="action" value="BuyCamel">Buy Camels</button>
+            <button type="submit" name="action" value="SellCamel">Sell Camels</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h3>Load Goods onto Caravan</h3>
+
+        {% if caravan_capacity == 0 %}
+            <p><em>You have no camels. Buy camels first to carry goods.</em></p>
+        {% elif caravan_free_space == 0 %}
+            <p><em>Caravan is full. Unload some cargo or buy more camels.</em></p>
+        {% else %}
+            <p>Free space: <strong>{{ caravan_free_space }}</strong> units. Goods in your pack:</p>
+
+            {% set has_goods = namespace(value=false) %}
+            {% for item, qty in player.trade_inventory.items() %}
+                {% if qty > 0 %}{% set has_goods.value = true %}{% endif %}
+            {% endfor %}
+
+            {% if has_goods.value %}
+                <ul>
+                    {% for item, qty in player.trade_inventory.items() %}
+                        {% if qty > 0 %}
+                            <li>
+                                {{ item }}: {{ qty }} in pack
+                                <form method="post" action="{{ url_for('action') }}" class="inline-form">
+                                    <input type="hidden" name="return_to"  value="caravan">
+                                    <input type="hidden" name="action"     value="LoadCargo">
+                                    <input type="hidden" name="item_name"  value="{{ item }}">
+                                    <input type="number"  name="quantity"  value="1" min="1" max="{{ qty }}" style="width:50px">
+                                    <button type="submit">Load</button>
+                                </form>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p><em>No goods in your pack. Buy some at the Market first.</em></p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+{% endblock %}

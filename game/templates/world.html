@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="panel">
+        <h2>Map & Travel</h2>
+
+        {% if player.travel.active %}
+            <p>
+                Traveling from
+                <strong>{{ MAP[player.travel.from].name }}</strong>
+                to
+                <strong>{{ MAP[player.travel.to].name }}</strong>
+            </p>
+
+            <p>Route: {{ player.travel.route_name }}</p>
+            <p>Progress: {{ player.travel.progress }} / {{ player.travel.distance }}</p>
+            <p>Danger: {{ player.travel.danger }}</p>
+
+            <form method="post" action="{{ url_for('action') }}">
+                <input type="hidden" name="return_to" value="world">
+                <button type="submit" name="action" value="Continue Travel">
+                    Continue Travel
+                </button>
+            </form>
+
+        {% else %}
+            <p>
+                Current city:
+                <strong>{{ MAP[player.city].name }}</strong>
+            </p>
+
+            <p>{{ MAP[player.city].description }}</p>
+
+            <h3>Available routes</h3>
+
+            {% if available_destinations %}
+                {% for dest_id, route in available_destinations.items() %}
+                    <form method="post" action="{{ url_for('action') }}">
+                        <input type="hidden" name="return_to" value="world">
+                        <input type="hidden" name="destination" value="{{ dest_id }}">
+                        <button type="submit" name="action" value="Travel">
+                            Travel to {{ MAP[dest_id].name }}
+                            — {{ route.route_name }}
+                            — Distance {{ route.distance }}
+                            — Danger {{ route.danger }}
+                        </button>
+                    </form>
+                {% endfor %}
+            {% else %}
+                <p>No available routes.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+{% endblock %}

@@ -1,12 +1,12 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 
-from game.player import Player
-from game.items import ITEM_TEMPLATES, create_item_instance
-from game.actions import handle_action
-from game.data import CITIES
-from game.utils import compute_total_stats, get_trade_bonus
-from game.map import MAP
-from game.travel import get_available_destinations
+from src.player import Player
+from src.items import ITEM_TEMPLATES, create_item_instance
+from src.actions import handle_action
+from src.data import CITIES
+from src.utils import compute_total_stats, get_trade_bonus
+from src.map import MAP
+from src.travel import get_available_destinations
 
 
 app = Flask(__name__)
@@ -108,10 +108,7 @@ def get_market(city_id):
     return {}
 
 
-@app.route("/")
-def index():
-    player = get_player()
-
+def _render_context(player):
     city = player["city"]
     market = get_market(city)
 
@@ -123,8 +120,7 @@ def index():
     if not player["travel"]["active"]:
         available_destinations = get_available_destinations(player)
 
-    return render_template(
-        "index.html",
+    return dict(
         player=player,
         city=city,
         market=market,
@@ -138,6 +134,32 @@ def index():
     )
 
 
+@app.route("/")
+def index():
+    return redirect(url_for("character"))
+
+
+@app.route("/character")
+def character():
+    player = get_player()
+    ctx = _render_context(player)
+    return render_template("character.html", active_page="character", **ctx)
+
+
+@app.route("/world")
+def world():
+    player = get_player()
+    ctx = _render_context(player)
+    return render_template("world.html", active_page="world", **ctx)
+
+
+@app.route("/market")
+def market():
+    player = get_player()
+    ctx = _render_context(player)
+    return render_template("market.html", active_page="market", **ctx)
+
+
 @app.route("/action", methods=["POST"])
 def action():
     player_data = get_player()
@@ -145,6 +167,7 @@ def action():
     action_name = request.form.get("action")
     item_name = request.form.get("item") or request.form.get("item_name")
     destination = request.form.get("destination")
+    return_to = request.form.get("return_to", "character")
 
     try:
         quantity = int(request.form.get("quantity", 1))
@@ -175,13 +198,18 @@ def action():
     session["player"] = updated_player
     session["message"] = message
 
-    return redirect(url_for("index"))
+    pages = {
+        "character": "character",
+        "world": "world",
+        "market": "market",
+    }
+    return redirect(url_for(pages.get(return_to, "character")))
 
 
 @app.route("/reset")
 def reset():
     session.clear()
-    return "Session cleared. Go back to <a href='/'>home</a>."
+    return redirect(url_for("character"))
 
 
 @app.route("/give_item")
@@ -195,7 +223,7 @@ def give_item():
 
     session["player"] = normalize_player(player)
 
-    return "Gave Iron Scimitar. Go back to <a href='/'>home</a>."
+    return redirect(url_for("character"))
 
 
 if __name__ == "__main__":

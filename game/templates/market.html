@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block content %}
+
+    <div class="section">
+        <h3>
+            Market in
+            {% if player.city in MAP %}
+                {{ MAP[player.city].name }}
+            {% else %}
+                {{ city }}
+            {% endif %}
+        </h3>
+
+        {% if player.travel.active %}
+            <p>You cannot trade while traveling.</p>
+        {% else %}
+            <table>
+                <tr>
+                    <th>Item</th>
+                    <th>Buy Price</th>
+                    <th>Sell Price</th>
+                </tr>
+
+                {% for item, prices in market.items() %}
+                    <tr>
+                        <td>{{ item }}</td>
+                        <td>
+                            {{ (prices.buy * (1 - trade_bonus)) | round(0) | int }}
+                            (base: {{ prices.buy }})
+                        </td>
+                        <td>
+                            {{ (prices.sell * (1 + trade_bonus)) | round(0) | int }}
+                            (base: {{ prices.sell }})
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+            <form method="post" action="{{ url_for('action') }}">
+                <input type="hidden" name="return_to" value="market">
+                <select name="item_name">
+                    {% for item in market.keys() %}
+                        <option value="{{ item }}">{{ item }}</option>
+                    {% endfor %}
+                </select>
+
+                <input type="number" name="quantity" value="1" min="1">
+
+                <button type="submit" name="action" value="Buy">Buy</button>
+                <button type="submit" name="action" value="Sell">Sell</button>
+            </form>
+        {% endif %}
+    </div>
+
+    <div class="section">
+        <h3>Other Actions</h3>
+
+        <form method="post" action="{{ url_for('action') }}">
+            <input type="hidden" name="return_to" value="market">
+            <button type="submit" name="action" value="Fight">Fight Random Enemy</button>
+            <button type="submit" name="action" value="Rest">Rest</button>
+
+            {% if not player.travel.active %}
+                <button type="submit" name="action" value="Visit Healer">Visit Healer</button>
+            {% endif %}
+        </form>
+    </div>
+
+    <div class="section">
+        <h3>Training</h3>
+
+        <form method="post" action="{{ url_for('action') }}">
+            <input type="hidden" name="return_to" value="market">
+            <select name="item_name">
+                <option value="strength">Strength</option>
+                <option value="agility">Agility</option>
+                <option value="vitality">Vitality</option>
+                <option value="intellect">Intellect</option>
+            </select>
+
+            <button type="submit" name="action" value="Train">Train</button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h3>Fight an Enemy</h3>
+
+        <form method="post" action="{{ url_for('action') }}">
+            <input type="hidden" name="return_to" value="market">
+            <input type="hidden" name="action" value="Fight">
+
+            <select name="item_name">
+                <option value="">Random Enemy</option>
+                <option value="Desert Bandit">Desert Bandit</option>
+                <option value="Mercenary">Mercenary</option>
+                <option value="Rival Trader">Rival Trader</option>
+                <option value="Nomad Warrior">Nomad Warrior</option>
+                <option value="Assassin">Assassin</option>
+            </select>
+
+            <button type="submit">Fight!</button>
+        </form>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Medieval RPG</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #f9f5e3;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1, h2, h3 {
+            color: #3e2f1c;
+        }
+
+        .section,
+        .panel {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #c9b88c;
+            background-color: #fff8dc;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 70%;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ccc;
+        }
+
+        form {
+            margin-top: 10px;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        .inline-form {
+            display: inline;
+        }
+
+        .message {
+            white-space: pre-line;
+            padding: 12px;
+            background-color: #efe3b8;
+            border: 1px solid #b89f5d;
+            margin-bottom: 20px;
+        }
+
+        /* ── Top bar ── */
+        .topbar {
+            background-color: #3e2f1c;
+            color: #f9f5e3;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .topbar-name {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .topbar-stats {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #d4bc7a;
+        }
+
+        .topbar-stats strong {
+            color: #f9f5e3;
+        }
+
+        /* ── Nav ── */
+        .nav {
+            background-color: #4e3d22;
+            display: flex;
+            border-bottom: 2px solid #c9b88c;
+        }
+
+        .nav a {
+            display: block;
+            padding: 10px 22px;
+            color: #d4bc7a;
+            text-decoration: none;
+            font-size: 14px;
+            border-right: 1px solid #6b5030;
+        }
+
+        .nav a:hover {
+            background-color: #5e4d30;
+            color: #f9f5e3;
+        }
+
+        .nav a.active {
+            background-color: #f9f5e3;
+            color: #3e2f1c;
+            font-weight: bold;
+        }
+
+        /* ── Page wrapper ── */
+        .page {
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="topbar">
+        <span class="topbar-name">{{ player.name }}</span>
+        <div class="topbar-stats">
+            <span>
+                {% if player.travel.active %}
+                    Traveling → <strong>{{ MAP[player.travel.to].name }}</strong>
+                    ({{ player.travel.progress }}/{{ player.travel.distance }})
+                {% elif player.city in MAP %}
+                    📍 <strong>{{ MAP[player.city].name }}</strong>
+                {% endif %}
+            </span>
+            <span>❤ <strong>{{ player.current_health }}/{{ total_stats.max_health }}</strong></span>
+            <span>💰 <strong>{{ player.gold }}</strong></span>
+            <span>Rep: <strong>{{ player.reputation }}</strong></span>
+        </div>
+    </div>
+
+    <div class="nav">
+        <a href="{{ url_for('character') }}" class="{% if active_page == 'character' %}active{% endif %}">Character</a>
+        <a href="{{ url_for('world') }}"     class="{% if active_page == 'world'     %}active{% endif %}">World & Travel</a>
+        <a href="{{ url_for('market') }}"    class="{% if active_page == 'market'    %}active{% endif %}">Market & Actions</a>
+    </div>
+
+    <div class="page">
+
+        {% if message %}
+            <div class="message">
+                <strong>{{ message }}</strong>
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+
+    </div>
+
+</body>
+</html>

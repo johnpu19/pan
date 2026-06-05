@@ -324,6 +324,37 @@ def handle_action(action, player, item_name=None, quantity=1, destination=None):
         stats = compute_total_stats(player)
         player["current_health"] = stats.get("max_health", 100)
         message = "You have rested and restored your health."
+    
+    elif action == "Visit Healer":
+        if player["travel"]["active"]:
+            message = "You cannot visit a healer while traveling."
+
+        else:
+            stats = compute_total_stats(player)
+            max_health = stats.get("max_health", 100)
+            current_health = player.get("current_health", max_health)
+
+            missing_health = max_health - current_health
+
+            if missing_health <= 0:
+                message = "You are already at full health."
+
+            else:
+                healing_cost = max(10, missing_health)
+
+                if player["gold"] >= healing_cost:
+                    player["gold"] -= healing_cost
+                    player["current_health"] = max_health
+
+                    message = (
+                        f"The healer treats your wounds.\n"
+                        f"You paid {healing_cost} gold and restored your health to {max_health}."
+                    )
+                else:
+                    message = (
+                        f"You need {healing_cost} gold for treatment, "
+                        f"but you only have {player['gold']}."
+                    )
 
     # ----------------------------
     # TRAIN

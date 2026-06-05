@@ -300,14 +300,18 @@
         {% endif %}
     </div>
 
-    <div class="section">
-        <h3>Other Actions</h3>
+  <div class="section">
+    <h3>Other Actions</h3>
 
-        <form method="post" action="{{ url_for('action') }}">
-            <button type="submit" name="action" value="Fight">Fight Random Enemy</button>
-            <button type="submit" name="action" value="Rest">Rest</button>
-        </form>
-    </div>
+    <form method="post" action="{{ url_for('action') }}">
+        <button type="submit" name="action" value="Fight">Fight Random Enemy</button>
+        <button type="submit" name="action" value="Rest">Rest</button>
+
+        {% if not player.travel.active %}
+            <button type="submit" name="action" value="Visit Healer">Visit Healer</button>
+        {% endif %}
+    </form>
+</div>
 
     <div class="section">
         <h3>Training</h3>
@@ -343,4 +347,4 @@
         </form>
     </div>
 </body>
-</html>
+</html>  

@@ -3,16 +3,17 @@
 import random
 
 
-def event_scorpion_sting(player, travel):
-    """
-    Scorpion sting travel event.
-    Removes 80% of current health, but does not kill the player outright.
-    """
-
+def damage_player_percent(player, percent, minimum_damage=1):
     current_health = player.get("current_health", 100)
 
-    damage = max(1, round(current_health * 0.8))
+    damage = max(minimum_damage, round(current_health * percent))
     player["current_health"] = max(1, current_health - damage)
+
+    return damage
+
+
+def event_scorpion_sting(player, travel):
+    damage = damage_player_percent(player, 0.80)
 
     return (
         "A scorpion crawls from beneath a warm stone and stings you!\n"
@@ -21,13 +22,82 @@ def event_scorpion_sting(player, travel):
     )
 
 
+def event_heat_exhaustion(player, travel):
+    damage = damage_player_percent(player, 0.20)
+
+    return (
+        "The sun beats down without mercy. Heat exhaustion slows your steps.\n"
+        f"You lose {damage} health.\n"
+        f"Current health: {player['current_health']}."
+    )
+
+
+def event_lost_in_dunes(player, travel):
+    old_progress = travel.get("progress", 0)
+    travel["progress"] = max(0, old_progress - 1)
+
+    return (
+        "The road disappears beneath wind-blown sand.\n"
+        "You lose time finding your way back.\n"
+        f"Travel progress is now {travel['progress']} / {travel['distance']}."
+    )
+
+
+def event_abandoned_pouch(player, travel):
+    gold_found = random.randint(5, 25)
+    player["gold"] = player.get("gold", 0) + gold_found
+
+    return (
+        "You notice a half-buried leather pouch near the roadside.\n"
+        f"Inside, you find {gold_found} gold."
+    )
+
+
+def event_helpful_caravan(player, travel):
+    reputation_gain = random.randint(1, 3)
+    player["reputation"] = player.get("reputation", 0) + reputation_gain
+
+    return (
+        "You share the road with a friendly caravan for part of the journey.\n"
+        f"Word of your good conduct spreads. Reputation +{reputation_gain}."
+    )
+
+
 TRAVEL_EVENTS = [
     {
         "id": "scorpion_sting",
         "name": "Scorpion Sting",
         "weight": 1,
-        "min_danger": 1,
+        "min_danger": 2,
         "handler": event_scorpion_sting,
+    },
+    {
+        "id": "heat_exhaustion",
+        "name": "Heat Exhaustion",
+        "weight": 3,
+        "min_danger": 1,
+        "handler": event_heat_exhaustion,
+    },
+    {
+        "id": "lost_in_dunes",
+        "name": "Lost in the Dunes",
+        "weight": 3,
+        "min_danger": 2,
+        "handler": event_lost_in_dunes,
+    },
+    {
+        "id": "abandoned_pouch",
+        "name": "Abandoned Pouch",
+        "weight": 2,
+        "min_danger": 1,
+        "handler": event_abandoned_pouch,
+    },
+    {
+        "id": "helpful_caravan",
+        "name": "Helpful Caravan",
+        "weight": 2,
+        "min_danger": 1,
+        "handler": event_helpful_caravan,
     },
 ]
 
@@ -42,14 +112,8 @@ def get_possible_events(travel):
 
 
 def roll_travel_event(player, travel):
-    """
-    Rolls whether an event happens during travel.
-    Higher route danger = higher event chance.
-    """
-
     danger = travel.get("danger", 1)
 
-    # Example:
     # danger 1 = 8%
     # danger 2 = 11%
     # danger 3 = 14%

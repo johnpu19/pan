@@ -11,8 +11,11 @@ DEFAULT_CARAVAN = {
 
 def get_caravan(player):
     if "caravan" not in player:
-        player["caravan"] = DEFAULT_CARAVAN.copy()
+        player["caravan"] = {"camels": 0, "cargo": {}}
+
+    if "cargo" not in player["caravan"]:
         player["caravan"]["cargo"] = {}
+
     return player["caravan"]
 
 

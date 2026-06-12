@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 
-from src.player import Player
+from src.player import create_new_player
 from src.items import ITEM_TEMPLATES, create_item_instance
 from src.actions import handle_action
 from src.data import CITIES
@@ -96,8 +96,7 @@ def normalize_player(player):
 
 def get_player():
     if "player" not in session:
-        new_player = Player("Traveler")
-        session["player"] = new_player.to_dict()
+        session["player"] = create_new_player("Traveler")
 
     player = normalize_player(session["player"])
     session["player"] = player
